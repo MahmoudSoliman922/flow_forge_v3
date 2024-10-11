@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play } from 'lucide-react';
 import { useFlows } from '../contexts/FlowContext';
 import PublishFlowModal from './PublishFlowModal';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Cell {
   id: number;
@@ -32,6 +33,7 @@ const FlowEditor: React.FC = () => {
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
   const { updateTempFlowMetadata, tempFlows, publishFlow, liveFlows } = useFlows();
+  const { user } = useAuth();
   const [nextId, setNextId] = useState(1);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -200,7 +202,7 @@ const FlowEditor: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-purple-400">FlowForge</h1>
+      <h1 className="text-4xl font-bold mb-6 text-purple-400">FlowForge</h1>
       
       <div className="mb-6 flex space-x-4">
         <button onClick={downloadFlow} className="btn btn-primary flex items-center">
@@ -233,16 +235,17 @@ const FlowEditor: React.FC = () => {
                     setFlow({ ...flow, metadata: { ...flow.metadata, title: e.target.value } });
                     updateTempFlowMetadata(flow.id, { title: e.target.value });
                   }}
-                  className="mt-1 block w-full rounded-md input"
+                  className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300">Author</label>
                 <input
                   type="text"
-                  value={flow.metadata.author}
+                  value={flow.metadata.author || user?.email || ''}
                   onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, author: e.target.value } })}
-                  className="mt-1 block w-full rounded-md input"
+                  className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
+                  readOnly
                 />
               </div>
               <div>
@@ -251,7 +254,7 @@ const FlowEditor: React.FC = () => {
                   type="text"
                   value={flow.metadata.version}
                   onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, version: e.target.value } })}
-                  className="mt-1 block w-full rounded-md input"
+                  className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
                 />
               </div>
               <div>
@@ -260,7 +263,7 @@ const FlowEditor: React.FC = () => {
                   type="text"
                   value={flow.metadata.description}
                   onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, description: e.target.value } })}
-                  className="mt-1 block w-full rounded-md input"
+                  className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
                 />
               </div>
             </div>
@@ -268,7 +271,7 @@ const FlowEditor: React.FC = () => {
 
           <div className="mb-6 flex justify-between items-center">
             <h2 className="text-2xl font-bold text-purple-400">Cells</h2>
-            <button onClick={executeAllCells} className="btn btn-primary flex items-center">
+            <button onClick={executeAllCells} className="btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center">
               <Play className="mr-2" size={18} />
               Execute All Cells
             </button>
@@ -282,7 +285,7 @@ const FlowEditor: React.FC = () => {
                 <textarea
                   value={cell.code}
                   onChange={(e) => updateCell(cell.id, 'code', e.target.value)}
-                  className="w-full h-40 rounded-md input font-mono"
+                  className="w-full h-40 rounded-md bg-gray-700 text-white p-2 font-mono"
                 />
               </div>
               <div className="mb-4">
@@ -291,7 +294,7 @@ const FlowEditor: React.FC = () => {
                   type="text"
                   value={cell.dependencies}
                   onChange={(e) => updateCell(cell.id, 'dependencies', e.target.value)}
-                  className="w-full rounded-md input"
+                  className="w-full rounded-md bg-gray-700 text-white p-2"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -300,7 +303,7 @@ const FlowEditor: React.FC = () => {
                   <select
                     value={cell.server}
                     onChange={(e) => updateCell(cell.id, 'server', e.target.value)}
-                    className="mt-1 block w-full rounded-md select"
+                    className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
                   >
                     {servers.map(server => (
                       <option key={server} value={server}>{server}</option>
@@ -312,7 +315,7 @@ const FlowEditor: React.FC = () => {
                   <select
                     value={cell.service}
                     onChange={(e) => updateCell(cell.id, 'service', e.target.value)}
-                    className="mt-1 block w-full rounded-md select"
+                    className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
                   >
                     {servicesByServer[cell.server].map(service => (
                       <option key={service} value={service}>{service}</option>
@@ -327,11 +330,11 @@ const FlowEditor: React.FC = () => {
                 </div>
               )}
               <div className="flex justify-end space-x-4">
-                <button onClick={() => executeCell(cell.id)} className="btn btn-primary flex items-center">
+                <button onClick={() => executeCell(cell.id)} className="btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center">
                   <Play className="mr-2" size={18} />
                   Execute
                 </button>
-                <button onClick={() => deleteCell(cell.id)} className="btn btn-danger">
+                <button onClick={() => deleteCell(cell.id)} className="btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
                   Delete
                 </button>
               </div>
@@ -341,13 +344,13 @@ const FlowEditor: React.FC = () => {
       )}
 
       <div className="mt-6 flex space-x-4">
-        <button onClick={addCell} className="btn btn-secondary flex items-center">
+        <button onClick={addCell} className="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center">
           <Plus className="mr-2" size={18} />
           Add Cell
         </button>
-        <button onClick={publishCurrentFlow} className="btn btn-primary flex items-center">
+        <button onClick={publishCurrentFlow} className="btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center">
           <Save className="mr-2" size={18} />
-          Publish Flow
+          Add to My Flows
         </button>
       </div>
 
