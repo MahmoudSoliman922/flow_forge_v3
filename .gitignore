@@ -25,6 +25,3 @@ dist-ssr
 
 # Aider-related files and directories
 .aider*
-.aider.chat.history.md
-.aider.input.history
-.aider.conf.yml
