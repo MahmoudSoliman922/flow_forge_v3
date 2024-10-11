@@ -97,7 +97,7 @@ const app = {
                             <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
                                 <h2 class="text-2xl font-semibold text-purple-300 mb-4">${flow.name}</h2>
                                 <p class="text-gray-400 mb-4">Last edited: ${new Date(flow.id).toLocaleDateString()}</p>
-                                <button class="edit-flow bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded" data-id="${flow.id}">
+                                <button class="edit-flow bg-purple-500 hover-bg-purple-600 text-white font-bold py-2 px-4 rounded" data-id="${flow.id}">
                                     Edit Flow
                                 </button>
                             </div>
@@ -128,8 +128,8 @@ const app = {
                                         <td class="px-6 py-4 whitespace-nowrap">${flow.name}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">${new Date(flow.id).toLocaleDateString()}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <button class="edit-flow bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded mr-2" data-id="${flow.id}">Edit</button>
-                                            <button class="delete-flow bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded" data-id="${flow.id}">Delete</button>
+                                            <button class="edit-flow bg-blue-500 hover-bg-blue-600 text-white font-bold py-1 px-3 rounded mr-2" data-id="${flow.id}">Edit</button>
+                                            <button class="delete-flow bg-red-500 hover-bg-red-600 text-white font-bold py-1 px-3 rounded" data-id="${flow.id}">Delete</button>
                                         </td>
                                     </tr>
                                 `).join('')}

@@ -100,7 +100,7 @@ input {
 .mb-4 { margin-bottom: 1rem; }
 .text-gray-400 { color: #a0aec0; }
 .bg-purple-500 { background-color: #9f7aea; }
-.hover\:bg-purple-600:hover { background-color: #805ad5; }
+.hover-bg-purple-600:hover { background-color: #805ad5; }
 .text-white { color: white; }
 .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
 .px-4 { padding-left: 1rem; padding-right: 1rem; }
@@ -108,11 +108,11 @@ input {
 
 /* Responsive grid */
 @media (min-width: 768px) {
-    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .md-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
-    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lg-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* Table styles */
@@ -128,7 +128,7 @@ input {
 .tracking-wider { letter-spacing: 0.05em; }
 .whitespace-nowrap { white-space: nowrap; }
 .bg-blue-500 { background-color: #4299e1; }
-.hover\:bg-blue-600:hover { background-color: #3182ce; }
+.hover-bg-blue-600:hover { background-color: #3182ce; }
 .bg-red-500 { background-color: #f56565; }
-.hover\:bg-red-600:hover { background-color: #e53e3e; }
+.hover-bg-red-600:hover { background-color: #e53e3e; }
 .mr-2 { margin-right: 0.5rem; }
