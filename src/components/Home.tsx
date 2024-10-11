@@ -4,26 +4,26 @@ import { useNavigate } from 'react-router-dom';
 import { useFlows } from '../contexts/FlowContext';
 
 const Home: React.FC = () => {
-  const { flows, addFlow, deleteFlow } = useFlows();
+  const { tempFlows, addTempFlow, deleteTempFlow } = useFlows();
   const navigate = useNavigate();
 
   const addNewFlow = () => {
     const newFlow = {
       id: Date.now(),
-      name: `New Flow ${flows.length + 1}`, // Keep this for backward compatibility
+      name: `New Flow ${tempFlows.length + 1}`, // Keep this for backward compatibility
       metadata: {
-        title: `New Flow ${flows.length + 1}`,
+        title: `New Flow ${tempFlows.length + 1}`,
         author: '',
         version: '1.0.0',
         description: '',
       },
       cells: [],
     };
-    addFlow(newFlow);
+    addTempFlow(newFlow);
   };
 
   const handleDeleteFlow = (id: number) => {
-    deleteFlow(id);
+    deleteTempFlow(id);
   };
 
   const editFlow = (id: number) => {
@@ -33,7 +33,7 @@ const Home: React.FC = () => {
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-4xl font-bold text-purple-400 mb-8 text-center">Welcome to Flow Forge</h1>
-      <p className="text-xl text-gray-300 mb-12 text-center">Create and manage your flows with ease</p>
+      <p className="text-xl text-gray-300 mb-12 text-center">Create and manage your temporary flows</p>
       
       <div className="flex justify-center mb-8">
         <button
@@ -46,7 +46,7 @@ const Home: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {flows.map(flow => (
+        {tempFlows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-white mb-4">{flow.metadata.title || `New Flow ${flow.id}`}</h2>
             <div className="flex justify-end">

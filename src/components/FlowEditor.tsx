@@ -30,7 +30,7 @@ const FlowEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
-  const { updateFlowMetadata, flows, publishFlow } = useFlows();
+  const { updateTempFlowMetadata, tempFlows, publishFlow } = useFlows();
   const [nextId, setNextId] = useState(1);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [saveAsNewVersion, setSaveAsNewVersion] = useState(false);
@@ -131,20 +131,11 @@ const FlowEditor: React.FC = () => {
     }
   };
 
-  const saveFlow = () => {
-    setShowSavePrompt(true);
-  };
-
-  const handleSaveFlow = () => {
+  const publishCurrentFlow = () => {
     if (flow) {
-      if (saveAsNewVersion) {
-        publishFlow(flow, parseInt(selectedFlow));
-      } else {
-        publishFlow(flow);
-      }
-      navigate('/manage-flows');
+      publishFlow(flow);
+      navigate('/live-flows');
     }
-    setShowSavePrompt(false);
   };
 
   const downloadFlow = () => {
@@ -357,7 +348,7 @@ const FlowEditor: React.FC = () => {
           <Plus className="mr-2" size={18} />
           Add Cell
         </button>
-        <button onClick={saveFlow} className="btn btn-primary flex items-center">
+        <button onClick={publishCurrentFlow} className="btn btn-primary flex items-center">
           <Save className="mr-2" size={18} />
           Publish Flow
         </button>
