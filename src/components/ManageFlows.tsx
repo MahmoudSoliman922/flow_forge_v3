@@ -63,11 +63,11 @@ const ManageFlows: React.FC = () => {
                       Set Live
                     </button>
                     <button
-                      className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded flex items-center"
+                      className="bg-green-500 hover:bg-green-600 text-white text-sm px-2 py-1 rounded flex items-center"
                       onClick={() => navigate(`/fork-flow/${flow.id}/${version.metadata.version}`)}
+                      title="Fork this version"
                     >
-                      <GitFork size={14} className="mr-1" />
-                      Fork
+                      <GitFork size={16} />
                     </button>
                   </div>
                 </li>
