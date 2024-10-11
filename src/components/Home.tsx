@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,17 @@ interface Flow {
 const Home: React.FC = () => {
   const [flows, setFlows] = useState<Flow[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedFlows = localStorage.getItem('flows');
+    if (storedFlows) {
+      setFlows(JSON.parse(storedFlows));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('flows', JSON.stringify(flows));
+  }, [flows]);
 
   const addNewFlow = () => {
     const newFlow: Flow = {

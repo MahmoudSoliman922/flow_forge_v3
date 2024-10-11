@@ -27,10 +27,6 @@ const Navbar: React.FC = () => {
                   <Home className="mr-1" size={18} />
                   Home
                 </Link>
-                <Link to="/flows" className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
-                  <Share2 className="mr-1" size={18} />
-                  My Flows
-                </Link>
                 <Link to="/manage-flows" className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
                   <List className="mr-1" size={18} />
                   Manage Flows
