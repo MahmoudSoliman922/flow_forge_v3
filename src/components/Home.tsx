@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Flow {
   id: number;
@@ -8,6 +9,7 @@ interface Flow {
 
 const Home: React.FC = () => {
   const [flows, setFlows] = useState<Flow[]>([]);
+  const navigate = useNavigate();
 
   const addNewFlow = () => {
     const newFlow: Flow = {
@@ -21,6 +23,10 @@ const Home: React.FC = () => {
     setFlows(flows.filter(flow => flow.id !== id));
   };
 
+  const editFlow = (id: number) => {
+    navigate(`/flows/${id}`);
+  };
+
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-4xl font-bold text-purple-400 mb-8 text-center">Welcome to Flow Forge</h1>
@@ -31,7 +37,10 @@ const Home: React.FC = () => {
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-white mb-4">{flow.name}</h2>
             <div className="flex justify-end">
-              <button className="bg-blue-500 hover:bg-blue-600 text-white rounded p-2 mr-2">
+              <button 
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded p-2 mr-2"
+                onClick={() => editFlow(flow.id)}
+              >
                 <Edit size={20} />
               </button>
               <button 

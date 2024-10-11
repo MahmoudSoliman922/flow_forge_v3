@@ -19,7 +19,7 @@ function AppContent() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/flows" element={<ProtectedRoute><FlowEditor /></ProtectedRoute>} />
+          <Route path="/flows/:id" element={<ProtectedRoute><FlowEditor /></ProtectedRoute>} />
           <Route path="/manage-flows" element={<ProtectedRoute><ManageFlows /></ProtectedRoute>} />
         </Routes>
       </div>
