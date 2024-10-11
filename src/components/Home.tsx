@@ -10,9 +10,9 @@ const Home: React.FC = () => {
   const addNewFlow = () => {
     const newFlow = {
       id: Date.now(),
-      name: `New Flow ${flows.length + 1}`,
+      name: `New Flow ${flows.length + 1}`, // Keep this for backward compatibility
       metadata: {
-        title: 'Untitled Flow',
+        title: `New Flow ${flows.length + 1}`,
         author: '',
         version: '1.0.0',
         description: '',
@@ -48,7 +48,7 @@ const Home: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {flows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-4">{flow.name}</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">{flow.metadata.title || 'Untitled Flow'}</h2>
             <div className="flex justify-end">
               <button 
                 className="bg-blue-500 hover:bg-blue-600 text-white rounded p-2 mr-2"
