@@ -12,15 +12,21 @@ interface Flow {
   cells: any[];
 }
 
+interface LiveFlow extends Flow {
+  versions: Flow[];
+  liveVersion: string;
+}
+
 interface FlowContextType {
   tempFlows: Flow[];
-  liveFlows: Flow[];
+  liveFlows: LiveFlow[];
   addTempFlow: (flow: Flow) => void;
   deleteTempFlow: (id: number) => void;
   updateTempFlow: (flow: Flow) => void;
-  updateTempFlowMetadata: (id: number, metadata: Partial<FlowMetadata>) => void;
+  updateTempFlowMetadata: (id: number, metadata: Partial<Flow['metadata']>) => void;
   publishFlow: (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => void;
   deleteLiveFlow: (id: number) => void;
+  updateLiveFlow: (flow: LiveFlow) => void;
 }
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
@@ -35,7 +41,7 @@ export const useFlows = () => {
 
 export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tempFlows, setTempFlows] = useState<Flow[]>([]);
-  const [liveFlows, setLiveFlows] = useState<Flow[]>([]);
+  const [liveFlows, setLiveFlows] = useState<LiveFlow[]>([]);
 
   useEffect(() => {
     const storedTempFlows = localStorage.getItem('tempFlows');
@@ -54,19 +60,19 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [tempFlows, liveFlows]);
 
   const addTempFlow = (flow: Flow) => {
-    setTempFlows([...tempFlows, flow]);
+    setTempFlows(prevFlows => [...prevFlows, flow]);
   };
 
   const deleteTempFlow = (id: number) => {
-    setTempFlows(tempFlows.filter(flow => flow.id !== id));
+    setTempFlows(prevFlows => prevFlows.filter(flow => flow.id !== id));
   };
 
   const updateTempFlow = (updatedFlow: Flow) => {
-    setTempFlows(tempFlows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
+    setTempFlows(prevFlows => prevFlows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
   };
 
-  const updateTempFlowMetadata = (id: number, metadata: Partial<FlowMetadata>) => {
-    setTempFlows(tempFlows.map(flow => 
+  const updateTempFlowMetadata = (id: number, metadata: Partial<Flow['metadata']>) => {
+    setTempFlows(prevFlows => prevFlows.map(flow => 
       flow.id === id 
         ? { ...flow, metadata: { ...flow.metadata, ...metadata } }
         : flow
@@ -75,15 +81,15 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const publishFlow = (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => {
     if (isNewFlow) {
-      const newLiveFlow = {
+      const newLiveFlow: LiveFlow = {
         ...flow,
         id: Date.now(),
         versions: [{ ...flow, id: Date.now() }],
         liveVersion: flow.metadata.version
       };
-      setLiveFlows([...liveFlows, newLiveFlow]);
+      setLiveFlows(prevLiveFlows => [...prevLiveFlows, newLiveFlow]);
     } else if (existingFlowId) {
-      setLiveFlows(liveFlows.map(liveFlow => {
+      setLiveFlows(prevLiveFlows => prevLiveFlows.map(liveFlow => {
         if (liveFlow.id === existingFlowId) {
           return {
             ...liveFlow,
@@ -94,11 +100,15 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return liveFlow;
       }));
     }
-    setTempFlows(tempFlows.filter(f => f.id !== flow.id));
+    setTempFlows(prevTempFlows => prevTempFlows.filter(f => f.id !== flow.id));
   };
 
   const deleteLiveFlow = (id: number) => {
-    setLiveFlows(liveFlows.filter(flow => flow.id !== id));
+    setLiveFlows(prevLiveFlows => prevLiveFlows.filter(flow => flow.id !== id));
+  };
+
+  const updateLiveFlow = (updatedFlow: LiveFlow) => {
+    setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
   };
 
   return (
@@ -110,7 +120,8 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateTempFlow, 
       updateTempFlowMetadata, 
       publishFlow,
-      deleteLiveFlow
+      deleteLiveFlow,
+      updateLiveFlow
     }}>
       {children}
     </FlowContext.Provider>
