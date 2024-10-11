@@ -137,14 +137,10 @@ const FlowEditor: React.FC = () => {
 
   const handleSaveFlow = () => {
     if (flow) {
-      const storedFlows = JSON.parse(localStorage.getItem('flows') || '[]');
       if (saveAsNewVersion) {
-        // Logic to save as a new version of existing flow
-        console.log('Saving as new version of flow:', selectedFlow);
+        publishFlow(flow, selectedFlow);
       } else {
-        // Logic to save as a new flow
-        const updatedFlows = storedFlows.map((f: Flow) => f.id === flow.id ? flow : f);
-        localStorage.setItem('flows', JSON.stringify(updatedFlows));
+        publishFlow(flow);
       }
     }
     setShowSavePrompt(false);
@@ -362,15 +358,15 @@ const FlowEditor: React.FC = () => {
         </button>
         <button onClick={saveFlow} className="btn btn-primary flex items-center">
           <Save className="mr-2" size={18} />
-          Add to My Flows
+          Publish Flow
         </button>
       </div>
 
-      {/* Save Flow Prompt */}
+      {/* Publish Flow Prompt */}
       {showSavePrompt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4 text-purple-400">Save Flow</h3>
+            <h3 className="text-xl font-bold mb-4 text-purple-400">Publish Flow</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 <input
@@ -379,7 +375,7 @@ const FlowEditor: React.FC = () => {
                   onChange={() => setSaveAsNewVersion(false)}
                   className="mr-2"
                 />
-                Save as new flow
+                Publish as new flow
               </label>
               <label className="block text-sm font-medium text-gray-300">
                 <input
@@ -388,7 +384,7 @@ const FlowEditor: React.FC = () => {
                   onChange={() => setSaveAsNewVersion(true)}
                   className="mr-2"
                 />
-                Save as new version of existing flow
+                Publish as new version of existing flow
               </label>
             </div>
             {saveAsNewVersion && (
@@ -400,8 +396,8 @@ const FlowEditor: React.FC = () => {
                   className="w-full rounded-md select"
                 >
                   <option value="">Select a flow</option>
-                  {existingFlows.map(flow => (
-                    <option key={flow.id} value={flow.id}>{flow.name}</option>
+                  {flows.map(flow => (
+                    <option key={flow.id} value={flow.id}>{flow.metadata.title}</option>
                   ))}
                 </select>
               </div>
@@ -411,7 +407,7 @@ const FlowEditor: React.FC = () => {
                 Cancel
               </button>
               <button onClick={handleSaveFlow} className="btn btn-primary">
-                Save
+                Publish
               </button>
             </div>
           </div>

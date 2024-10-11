@@ -18,6 +18,7 @@ interface FlowContextType {
   deleteFlow: (id: number) => void;
   updateFlow: (flow: Flow) => void;
   updateFlowMetadata: (id: number, metadata: Partial<FlowMetadata>) => void;
+  publishFlow: (flow: Flow, existingFlowId?: number) => void;
 }
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
@@ -64,8 +65,32 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ));
   };
 
+  const publishFlow = (flow: Flow, existingFlowId?: number) => {
+    if (existingFlowId) {
+      // Publish as a new version of an existing flow
+      setFlows(flows.map(f => {
+        if (f.id === existingFlowId) {
+          return {
+            ...f,
+            versions: [...f.versions, flow],
+            liveVersion: flow.metadata.version
+          };
+        }
+        return f;
+      }));
+    } else {
+      // Publish as a new flow
+      const newFlow = {
+        ...flow,
+        versions: [flow],
+        liveVersion: flow.metadata.version
+      };
+      setFlows([...flows, newFlow]);
+    }
+  };
+
   return (
-    <FlowContext.Provider value={{ flows, addFlow, deleteFlow, updateFlow, updateFlowMetadata }}>
+    <FlowContext.Provider value={{ flows, addFlow, deleteFlow, updateFlow, updateFlowMetadata, publishFlow }}>
       {children}
     </FlowContext.Provider>
   );
