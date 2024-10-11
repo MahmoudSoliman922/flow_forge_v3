@@ -94,7 +94,8 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return {
             ...liveFlow,
             versions: [...liveFlow.versions, { ...flow, id: Date.now() }],
-            liveVersion: flow.metadata.version
+            // Don't change the liveVersion when adding a new version
+            // liveVersion: flow.metadata.version
           };
         }
         return liveFlow;

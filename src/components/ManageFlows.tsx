@@ -1,19 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useFlows } from '../contexts/FlowContext';
 
 const ManageFlows: React.FC = () => {
   const { getLiveFlows, deleteLiveFlow, updateLiveFlow } = useFlows();
-  const liveFlows = getLiveFlows();
+  const [liveFlows, setLiveFlows] = useState(getLiveFlows());
+
+  useEffect(() => {
+    const updateFlows = () => setLiveFlows(getLiveFlows());
+    updateFlows();
+
+    window.addEventListener('focus', updateFlows);
+    return () => window.removeEventListener('focus', updateFlows);
+  }, [getLiveFlows]);
 
   const handleDeleteFlow = (id: number) => {
     deleteLiveFlow(id);
+    setLiveFlows(getLiveFlows());
   };
 
   const handleSetLiveVersion = (flowId: number, version: string) => {
     const flow = liveFlows.find(f => f.id === flowId);
     if (flow) {
       updateLiveFlow({ ...flow, liveVersion: version });
+      setLiveFlows(getLiveFlows());
     }
   };
 
