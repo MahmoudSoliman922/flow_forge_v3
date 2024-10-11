@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play } from 'lucide-react';
 
 interface Cell {
@@ -18,6 +19,7 @@ interface FlowMetadata {
 }
 
 const FlowEditor: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const [cells, setCells] = useState<Cell[]>([]);
   const [nextId, setNextId] = useState(1);
   const [metadata, setMetadata] = useState<FlowMetadata>({
@@ -43,6 +45,14 @@ const FlowEditor: React.FC = () => {
     { id: '1', name: 'Flow 1' },
     { id: '2', name: 'Flow 2' },
   ];
+
+  useEffect(() => {
+    if (id) {
+      // Fetch flow data based on id
+      // For now, we'll just set a mock title
+      setMetadata(prev => ({ ...prev, title: `Flow ${id}` }));
+    }
+  }, [id]);
 
   const addCell = () => {
     setCells([...cells, {
