@@ -142,6 +142,7 @@ const FlowEditor: React.FC = () => {
       } else {
         publishFlow(flow);
       }
+      navigate('/manage-flows');
     }
     setShowSavePrompt(false);
   };
@@ -406,7 +407,11 @@ const FlowEditor: React.FC = () => {
               <button onClick={() => setShowSavePrompt(false)} className="btn btn-secondary">
                 Cancel
               </button>
-              <button onClick={handleSaveFlow} className="btn btn-primary">
+              <button 
+                onClick={handleSaveFlow} 
+                className="btn btn-primary"
+                disabled={saveAsNewVersion && !selectedFlow}
+              >
                 Publish
               </button>
             </div>

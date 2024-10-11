@@ -70,10 +70,15 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Publish as a new version of an existing flow
       setFlows(flows.map(f => {
         if (f.id === existingFlowId) {
+          const newVersion = {
+            ...flow,
+            id: Date.now(), // Assign a new id for the version
+            parentId: existingFlowId
+          };
           return {
             ...f,
-            versions: [...f.versions, flow],
-            liveVersion: flow.metadata.version
+            versions: [...(f.versions || []), newVersion],
+            liveVersion: newVersion.metadata.version
           };
         }
         return f;
@@ -82,7 +87,8 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Publish as a new flow
       const newFlow = {
         ...flow,
-        versions: [flow],
+        id: Date.now(), // Assign a new id for the flow
+        versions: [],
         liveVersion: flow.metadata.version
       };
       setFlows([...flows, newFlow]);
