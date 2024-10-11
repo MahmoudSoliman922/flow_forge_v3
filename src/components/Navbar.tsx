@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { List, LogIn, LogOut, Share2 } from 'lucide-react';
+import { List, LogIn, LogOut, Share2, Home } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -24,6 +24,10 @@ const Navbar: React.FC = () => {
             {isLoggedIn && (
               <>
                 <Link to="/" className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
+                  <Home className="mr-1" size={18} />
+                  Home
+                </Link>
+                <Link to="/flows" className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
                   <Share2 className="mr-1" size={18} />
                   My Flows
                 </Link>

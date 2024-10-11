@@ -4,6 +4,7 @@ import Login from './components/Login';
 import FlowEditor from './components/FlowEditor';
 import ManageFlows from './components/ManageFlows';
 import Navbar from './components/Navbar';
+import Home from './components/Home';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = useAuth();
@@ -17,7 +18,8 @@ function AppContent() {
       <div className="container mx-auto px-4 py-8">
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute><FlowEditor /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/flows" element={<ProtectedRoute><FlowEditor /></ProtectedRoute>} />
           <Route path="/manage-flows" element={<ProtectedRoute><ManageFlows /></ProtectedRoute>} />
         </Routes>
       </div>
