@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play } from 'lucide-react';
 
 interface Cell {
@@ -18,16 +18,18 @@ interface FlowMetadata {
   description: string;
 }
 
+interface Flow {
+  id: number;
+  name: string;
+  metadata: FlowMetadata;
+  cells: Cell[];
+}
+
 const FlowEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [cells, setCells] = useState<Cell[]>([]);
+  const navigate = useNavigate();
+  const [flow, setFlow] = useState<Flow | null>(null);
   const [nextId, setNextId] = useState(1);
-  const [metadata, setMetadata] = useState<FlowMetadata>({
-    title: 'Untitled Flow',
-    author: '',
-    version: '1.0.0',
-    description: '',
-  });
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [saveAsNewVersion, setSaveAsNewVersion] = useState(false);
   const [selectedFlow, setSelectedFlow] = useState('');
@@ -40,64 +42,91 @@ const FlowEditor: React.FC = () => {
     'Server C': ['Service 7', 'Service 8', 'Service 9'],
   };
 
-  // Mock data for existing flows
-  const existingFlows = [
-    { id: '1', name: 'Flow 1' },
-    { id: '2', name: 'Flow 2' },
-  ];
-
   useEffect(() => {
     if (id) {
-      // Fetch flow data based on id
-      // For now, we'll just set a mock title
-      setMetadata(prev => ({ ...prev, title: `Flow ${id}` }));
+      const storedFlows = JSON.parse(localStorage.getItem('flows') || '[]');
+      const currentFlow = storedFlows.find((f: Flow) => f.id === parseInt(id));
+      if (currentFlow) {
+        setFlow(currentFlow);
+        setNextId(Math.max(...currentFlow.cells.map((cell: Cell) => cell.id)) + 1);
+      } else {
+        navigate('/');
+      }
     }
-  }, [id]);
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (flow) {
+      const storedFlows = JSON.parse(localStorage.getItem('flows') || '[]');
+      const updatedFlows = storedFlows.map((f: Flow) => f.id === flow.id ? flow : f);
+      localStorage.setItem('flows', JSON.stringify(updatedFlows));
+    }
+  }, [flow]);
 
   const addCell = () => {
-    setCells([...cells, {
-      id: nextId,
-      code: '// Enter your code here',
-      dependencies: '',
-      server: servers[0],
-      service: servicesByServer[servers[0]][0]
-    }]);
-    setNextId(nextId + 1);
+    if (flow) {
+      const newCell: Cell = {
+        id: nextId,
+        code: '// Enter your code here',
+        dependencies: '',
+        server: servers[0],
+        service: servicesByServer[servers[0]][0]
+      };
+      setFlow({ ...flow, cells: [...flow.cells, newCell] });
+      setNextId(nextId + 1);
+    }
   };
 
   const updateCell = (id: number, field: keyof Cell, value: string) => {
-    setCells(cells.map(cell => {
-      if (cell.id === id) {
-        if (field === 'server') {
-          return { ...cell, [field]: value, service: servicesByServer[value][0] };
-        }
-        return { ...cell, [field]: value };
-      }
-      return cell;
-    }));
+    if (flow) {
+      setFlow({
+        ...flow,
+        cells: flow.cells.map(cell => {
+          if (cell.id === id) {
+            if (field === 'server') {
+              return { ...cell, [field]: value, service: servicesByServer[value][0] };
+            }
+            return { ...cell, [field]: value };
+          }
+          return cell;
+        })
+      });
+    }
   };
 
   const deleteCell = (id: number) => {
-    setCells(cells.filter(cell => cell.id !== id));
+    if (flow) {
+      setFlow({ ...flow, cells: flow.cells.filter(cell => cell.id !== id) });
+    }
   };
 
   const executeCell = (id: number) => {
-    // Mock backend response
-    const mockOutput = `Executed cell ${id}\nOutput: Success`;
-    setCells(cells.map(cell => {
-      if (cell.id === id) {
-        return { ...cell, output: mockOutput };
-      }
-      return cell;
-    }));
+    if (flow) {
+      // Mock backend response
+      const mockOutput = `Executed cell ${id}\nOutput: Success`;
+      setFlow({
+        ...flow,
+        cells: flow.cells.map(cell => {
+          if (cell.id === id) {
+            return { ...cell, output: mockOutput };
+          }
+          return cell;
+        })
+      });
+    }
   };
 
   const executeAllCells = () => {
-    // Mock backend response for all cells
-    setCells(cells.map(cell => ({
-      ...cell,
-      output: `Executed cell ${cell.id}\nOutput: Success for all cells`
-    })));
+    if (flow) {
+      // Mock backend response for all cells
+      setFlow({
+        ...flow,
+        cells: flow.cells.map(cell => ({
+          ...cell,
+          output: `Executed cell ${cell.id}\nOutput: Success for all cells`
+        }))
+      });
+    }
   };
 
   const saveFlow = () => {
@@ -105,28 +134,34 @@ const FlowEditor: React.FC = () => {
   };
 
   const handleSaveFlow = () => {
-    if (saveAsNewVersion) {
-      // Logic to save as a new version of existing flow
-      console.log('Saving as new version of flow:', selectedFlow);
-    } else {
-      // Logic to save as a new flow
-      console.log('Saving as new flow:', metadata.title);
+    if (flow) {
+      const storedFlows = JSON.parse(localStorage.getItem('flows') || '[]');
+      if (saveAsNewVersion) {
+        // Logic to save as a new version of existing flow
+        console.log('Saving as new version of flow:', selectedFlow);
+      } else {
+        // Logic to save as a new flow
+        const updatedFlows = storedFlows.map((f: Flow) => f.id === flow.id ? flow : f);
+        localStorage.setItem('flows', JSON.stringify(updatedFlows));
+      }
     }
     setShowSavePrompt(false);
   };
 
   const downloadFlow = () => {
-    const flowData = {
-      metadata,
-      cells: cells.map(({ id, ...rest }) => rest) // Exclude the id from the download
-    };
-    const blob = new Blob([JSON.stringify(flowData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${metadata.title.replace(/\s+/g, '_')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (flow) {
+      const flowData = {
+        metadata: flow.metadata,
+        cells: flow.cells.map(({ id, ...rest }) => rest) // Exclude the id from the download
+      };
+      const blob = new Blob([JSON.stringify(flowData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${flow.metadata.title.replace(/\s+/g, '_')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const uploadFlow = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,12 +171,17 @@ const FlowEditor: React.FC = () => {
       reader.onload = (e) => {
         try {
           const flowData = JSON.parse(e.target?.result as string);
-          setMetadata(flowData.metadata);
-          setCells(flowData.cells.map((cell: Omit<Cell, 'id'>, index: number) => ({
-            ...cell,
-            id: index + 1
-          })));
-          setNextId(flowData.cells.length + 1);
+          if (flow) {
+            setFlow({
+              ...flow,
+              metadata: flowData.metadata,
+              cells: flowData.cells.map((cell: Omit<Cell, 'id'>, index: number) => ({
+                ...cell,
+                id: index + 1
+              }))
+            });
+            setNextId(flowData.cells.length + 1);
+          }
         } catch (error) {
           console.error('Error parsing JSON:', error);
           alert('Invalid flow file');
@@ -156,13 +196,18 @@ const FlowEditor: React.FC = () => {
   };
 
   const confirmReset = () => {
-    setCells([]);
-    setMetadata({
-      title: 'Untitled Flow',
-      author: '',
-      version: '1.0.0',
-      description: '',
-    });
+    if (flow) {
+      setFlow({
+        ...flow,
+        metadata: {
+          title: 'Untitled Flow',
+          author: '',
+          version: '1.0.0',
+          description: '',
+        },
+        cells: []
+      });
+    }
     setShowConfirmReset(false);
   };
 
@@ -187,119 +232,123 @@ const FlowEditor: React.FC = () => {
       </div>
 
       {/* Flow Metadata */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-purple-400">Flow Metadata</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300">Title</label>
-            <input
-              type="text"
-              value={metadata.title}
-              onChange={(e) => setMetadata({ ...metadata, title: e.target.value })}
-              className="mt-1 block w-full rounded-md input"
-            />
+      {flow && (
+        <>
+          <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">Flow Metadata</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Title</label>
+                <input
+                  type="text"
+                  value={flow.metadata.title}
+                  onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, title: e.target.value } })}
+                  className="mt-1 block w-full rounded-md input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Author</label>
+                <input
+                  type="text"
+                  value={flow.metadata.author}
+                  onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, author: e.target.value } })}
+                  className="mt-1 block w-full rounded-md input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Version</label>
+                <input
+                  type="text"
+                  value={flow.metadata.version}
+                  onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, version: e.target.value } })}
+                  className="mt-1 block w-full rounded-md input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Description</label>
+                <input
+                  type="text"
+                  value={flow.metadata.description}
+                  onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, description: e.target.value } })}
+                  className="mt-1 block w-full rounded-md input"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300">Author</label>
-            <input
-              type="text"
-              value={metadata.author}
-              onChange={(e) => setMetadata({ ...metadata, author: e.target.value })}
-              className="mt-1 block w-full rounded-md input"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300">Version</label>
-            <input
-              type="text"
-              value={metadata.version}
-              onChange={(e) => setMetadata({ ...metadata, version: e.target.value })}
-              className="mt-1 block w-full rounded-md input"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300">Description</label>
-            <input
-              type="text"
-              value={metadata.description}
-              onChange={(e) => setMetadata({ ...metadata, description: e.target.value })}
-              className="mt-1 block w-full rounded-md input"
-            />
-          </div>
-        </div>
-      </div>
 
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-purple-400">Cells</h2>
-        <button onClick={executeAllCells} className="btn btn-primary flex items-center">
-          <Play className="mr-2" size={18} />
-          Execute All Cells
-        </button>
-      </div>
-
-      {cells.map((cell, index) => (
-        <div key={cell.id} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md">
-          <div className="font-bold mb-4 text-purple-300">Cell #{index + 1}</div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Code</label>
-            <textarea
-              value={cell.code}
-              onChange={(e) => updateCell(cell.id, 'code', e.target.value)}
-              className="w-full h-40 rounded-md input font-mono"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Dependencies (comma-separated)</label>
-            <input
-              type="text"
-              value={cell.dependencies}
-              onChange={(e) => updateCell(cell.id, 'dependencies', e.target.value)}
-              className="w-full rounded-md input"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300">Server</label>
-              <select
-                value={cell.server}
-                onChange={(e) => updateCell(cell.id, 'server', e.target.value)}
-                className="mt-1 block w-full rounded-md select"
-              >
-                {servers.map(server => (
-                  <option key={server} value={server}>{server}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300">Service</label>
-              <select
-                value={cell.service}
-                onChange={(e) => updateCell(cell.id, 'service', e.target.value)}
-                className="mt-1 block w-full rounded-md select"
-              >
-                {servicesByServer[cell.server].map(service => (
-                  <option key={service} value={service}>{service}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          {cell.output && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Output</label>
-              <pre className="bg-gray-900 p-4 rounded-md text-green-400 font-mono">{cell.output}</pre>
-            </div>
-          )}
-          <div className="flex justify-end space-x-4">
-            <button onClick={() => executeCell(cell.id)} className="btn btn-primary flex items-center">
+          <div className="mb-6 flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-purple-400">Cells</h2>
+            <button onClick={executeAllCells} className="btn btn-primary flex items-center">
               <Play className="mr-2" size={18} />
-              Execute
-            </button>
-            <button onClick={() => deleteCell(cell.id)} className="btn btn-danger">
-              Delete
+              Execute All Cells
             </button>
           </div>
-        </div>
-      ))}
+
+          {flow.cells.map((cell, index) => (
+            <div key={cell.id} className="mb-6 p-6 bg-gray-800 rounded-lg shadow-md">
+              <div className="font-bold mb-4 text-purple-300">Cell #{index + 1}</div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Code</label>
+                <textarea
+                  value={cell.code}
+                  onChange={(e) => updateCell(cell.id, 'code', e.target.value)}
+                  className="w-full h-40 rounded-md input font-mono"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Dependencies (comma-separated)</label>
+                <input
+                  type="text"
+                  value={cell.dependencies}
+                  onChange={(e) => updateCell(cell.id, 'dependencies', e.target.value)}
+                  className="w-full rounded-md input"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Server</label>
+                  <select
+                    value={cell.server}
+                    onChange={(e) => updateCell(cell.id, 'server', e.target.value)}
+                    className="mt-1 block w-full rounded-md select"
+                  >
+                    {servers.map(server => (
+                      <option key={server} value={server}>{server}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Service</label>
+                  <select
+                    value={cell.service}
+                    onChange={(e) => updateCell(cell.id, 'service', e.target.value)}
+                    className="mt-1 block w-full rounded-md select"
+                  >
+                    {servicesByServer[cell.server].map(service => (
+                      <option key={service} value={service}>{service}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {cell.output && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Output</label>
+                  <pre className="bg-gray-900 p-4 rounded-md text-green-400 font-mono">{cell.output}</pre>
+                </div>
+              )}
+              <div className="flex justify-end space-x-4">
+                <button onClick={() => executeCell(cell.id)} className="btn btn-primary flex items-center">
+                  <Play className="mr-2" size={18} />
+                  Execute
+                </button>
+                <button onClick={() => deleteCell(cell.id)} className="btn btn-danger">
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
 
       <div className="mt-6 flex space-x-4">
         <button onClick={addCell} className="btn btn-secondary flex items-center">

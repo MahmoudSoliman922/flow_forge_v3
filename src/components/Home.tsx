@@ -5,6 +5,13 @@ import { useNavigate } from 'react-router-dom';
 interface Flow {
   id: number;
   name: string;
+  metadata: {
+    title: string;
+    author: string;
+    version: string;
+    description: string;
+  };
+  cells: any[];
 }
 
 const Home: React.FC = () => {
@@ -26,8 +33,16 @@ const Home: React.FC = () => {
     const newFlow: Flow = {
       id: Date.now(),
       name: `New Flow ${flows.length + 1}`,
+      metadata: {
+        title: 'Untitled Flow',
+        author: '',
+        version: '1.0.0',
+        description: '',
+      },
+      cells: [],
     };
     setFlows([...flows, newFlow]);
+    navigate(`/flows/${newFlow.id}`);
   };
 
   const deleteFlow = (id: number) => {
