@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { FlowProvider } from './contexts/FlowContext';
 import Login from './components/Login';
 import FlowEditor from './components/FlowEditor';
 import ManageFlows from './components/ManageFlows';
@@ -30,9 +31,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <FlowProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </FlowProvider>
     </AuthProvider>
   );
 }

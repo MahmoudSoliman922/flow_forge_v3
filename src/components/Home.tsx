@@ -1,36 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-interface Flow {
-  id: number;
-  name: string;
-  metadata: {
-    title: string;
-    author: string;
-    version: string;
-    description: string;
-  };
-  cells: any[];
-}
+import { useFlows } from '../contexts/FlowContext';
 
 const Home: React.FC = () => {
-  const [flows, setFlows] = useState<Flow[]>([]);
+  const { flows, addFlow, deleteFlow } = useFlows();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedFlows = localStorage.getItem('flows');
-    if (storedFlows) {
-      setFlows(JSON.parse(storedFlows));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('flows', JSON.stringify(flows));
-  }, [flows]);
-
   const addNewFlow = () => {
-    const newFlow: Flow = {
+    const newFlow = {
       id: Date.now(),
       name: `New Flow ${flows.length + 1}`,
       metadata: {
@@ -41,11 +19,11 @@ const Home: React.FC = () => {
       },
       cells: [],
     };
-    setFlows([...flows, newFlow]);
+    addFlow(newFlow);
   };
 
-  const deleteFlow = (id: number) => {
-    setFlows(flows.filter(flow => flow.id !== id));
+  const handleDeleteFlow = (id: number) => {
+    deleteFlow(id);
   };
 
   const editFlow = (id: number) => {
@@ -80,7 +58,7 @@ const Home: React.FC = () => {
               </button>
               <button 
                 className="bg-red-500 hover:bg-red-600 text-white rounded p-2"
-                onClick={() => deleteFlow(flow.id)}
+                onClick={() => handleDeleteFlow(flow.id)}
               >
                 <Trash2 size={20} />
               </button>
