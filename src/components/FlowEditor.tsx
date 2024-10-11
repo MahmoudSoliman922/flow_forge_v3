@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play } from 'lucide-react';
+import { useFlows } from '../contexts/FlowContext';
 
 interface Cell {
   id: number;
@@ -29,6 +30,7 @@ const FlowEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
+  const { updateFlowMetadata } = useFlows();
   const [nextId, setNextId] = useState(1);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [saveAsNewVersion, setSaveAsNewVersion] = useState(false);
@@ -242,7 +244,10 @@ const FlowEditor: React.FC = () => {
                 <input
                   type="text"
                   value={flow.metadata.title}
-                  onChange={(e) => setFlow({ ...flow, metadata: { ...flow.metadata, title: e.target.value } })}
+                  onChange={(e) => {
+                    setFlow({ ...flow, metadata: { ...flow.metadata, title: e.target.value } });
+                    updateFlowMetadata(flow.id, { title: e.target.value });
+                  }}
                   className="mt-1 block w-full rounded-md input"
                 />
               </div>

@@ -17,6 +17,7 @@ interface FlowContextType {
   addFlow: (flow: Flow) => void;
   deleteFlow: (id: number) => void;
   updateFlow: (flow: Flow) => void;
+  updateFlowMetadata: (id: number, metadata: Partial<FlowMetadata>) => void;
 }
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
@@ -55,8 +56,16 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setFlows(flows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
   };
 
+  const updateFlowMetadata = (id: number, metadata: Partial<FlowMetadata>) => {
+    setFlows(flows.map(flow => 
+      flow.id === id 
+        ? { ...flow, metadata: { ...flow.metadata, ...metadata } }
+        : flow
+    ));
+  };
+
   return (
-    <FlowContext.Provider value={{ flows, addFlow, deleteFlow, updateFlow }}>
+    <FlowContext.Provider value={{ flows, addFlow, deleteFlow, updateFlow, updateFlowMetadata }}>
       {children}
     </FlowContext.Provider>
   );

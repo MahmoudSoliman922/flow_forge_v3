@@ -48,7 +48,7 @@ const Home: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {flows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-4">{flow.metadata.title || 'Untitled Flow'}</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">{flow.metadata.title || `New Flow ${flow.id}`}</h2>
             <div className="flex justify-end">
               <button 
                 className="bg-blue-500 hover:bg-blue-600 text-white rounded p-2 mr-2"
