@@ -41,7 +41,9 @@ const Home: React.FC = () => {
       },
       cells: [],
     };
-    setFlows([...flows, newFlow]);
+    const updatedFlows = [...flows, newFlow];
+    setFlows(updatedFlows);
+    localStorage.setItem('flows', JSON.stringify(updatedFlows));
     navigate(`/flows/${newFlow.id}`);
   };
 
