@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FlowProvider } from './contexts/FlowContext';
 import Login from './components/Login';
 import FlowEditor from './components/FlowEditor';
-import LiveFlows from './components/LiveFlows';
+import ManageFlows from './components/ManageFlows';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 
@@ -21,7 +21,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/flows/:id" element={<ProtectedRoute><FlowEditor /></ProtectedRoute>} />
-          <Route path="/live-flows" element={<ProtectedRoute><LiveFlows /></ProtectedRoute>} />
+          <Route path="/manage-flows" element={<ProtectedRoute><ManageFlows /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>

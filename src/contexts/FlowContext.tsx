@@ -103,6 +103,11 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTempFlows(prevTempFlows => prevTempFlows.filter(f => f.id !== flow.id));
   };
 
+  // Add this function to get live flows
+  const getLiveFlows = () => {
+    return liveFlows;
+  };
+
   const deleteLiveFlow = (id: number) => {
     setLiveFlows(prevLiveFlows => prevLiveFlows.filter(flow => flow.id !== id));
   };
@@ -121,7 +126,8 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateTempFlowMetadata, 
       publishFlow,
       deleteLiveFlow,
-      updateLiveFlow
+      updateLiveFlow,
+      getLiveFlows
     }}>
       {children}
     </FlowContext.Provider>

@@ -27,9 +27,9 @@ const Navbar: React.FC = () => {
                   <Home className="mr-1" size={18} />
                   Home
                 </Link>
-                <Link to="/live-flows" className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
+                <Link to="/manage-flows" className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
                   <List className="mr-1" size={18} />
-                  Live Flows
+                  Manage Flows
                 </Link>
                 <button onClick={handleLogout} className="flex items-center hover:bg-gray-700 px-3 py-2 rounded transition-colors duration-200">
                   <LogOut className="mr-1" size={18} />
