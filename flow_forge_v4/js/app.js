@@ -1,5 +1,7 @@
 // Main application logic
 const app = {
+    flows: [],
+
     init() {
         this.renderNavbar();
         this.handleRouting();
@@ -44,16 +46,18 @@ const app = {
         switch (hash) {
             case 'home':
                 content.innerHTML = this.homeTemplate();
+                this.setupCreateFlowButton();
                 break;
             case 'login':
                 content.innerHTML = this.loginTemplate();
                 this.setupLoginForm();
                 break;
             case 'flows':
-                content.innerHTML = '<h1>Flow Editor</h1><p>Flow editor component will be implemented here.</p>';
+                content.innerHTML = this.flowsTemplate();
                 break;
             case 'manage-flows':
-                content.innerHTML = '<h1>Manage Flows</h1><p>Manage flows component will be implemented here.</p>';
+                content.innerHTML = this.manageFlowsTemplate();
+                this.setupManageFlowsHandlers();
                 break;
             default:
                 content.innerHTML = '<h1>404 Not Found</h1>';
@@ -83,6 +87,43 @@ const app = {
         `;
     },
 
+    flowsTemplate() {
+        return `
+            <div class="flows">
+                <h1>My Flows</h1>
+                ${this.flows.length > 0 ? `
+                    <ul>
+                        ${this.flows.map(flow => `
+                            <li>
+                                <span>${flow.name}</span>
+                                <button class="edit-flow" data-id="${flow.id}">Edit</button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                ` : '<p>You have no flows yet. Create one from the home page!</p>'}
+            </div>
+        `;
+    },
+
+    manageFlowsTemplate() {
+        return `
+            <div class="manage-flows">
+                <h1>Manage Flows</h1>
+                ${this.flows.length > 0 ? `
+                    <ul>
+                        ${this.flows.map(flow => `
+                            <li>
+                                <span>${flow.name}</span>
+                                <button class="edit-flow" data-id="${flow.id}">Edit</button>
+                                <button class="delete-flow" data-id="${flow.id}">Delete</button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                ` : '<p>You have no flows to manage.</p>'}
+            </div>
+        `;
+    },
+
     setupLoginForm() {
         const loginForm = document.getElementById('login-form');
         loginForm.addEventListener('submit', (e) => {
@@ -91,6 +132,49 @@ const app = {
             const password = document.getElementById('password').value;
             auth.login(email, password);
             this.init();
+        });
+    },
+
+    setupCreateFlowButton() {
+        const createFlowButton = document.getElementById('create-flow');
+        createFlowButton.addEventListener('click', () => {
+            const flowName = prompt('Enter a name for your new flow:');
+            if (flowName) {
+                const newFlow = {
+                    id: Date.now(),
+                    name: flowName
+                };
+                this.flows.push(newFlow);
+                alert('Flow created successfully!');
+                window.location.hash = 'flows';
+            }
+        });
+    },
+
+    setupManageFlowsHandlers() {
+        const editButtons = document.querySelectorAll('.edit-flow');
+        const deleteButtons = document.querySelectorAll('.delete-flow');
+
+        editButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const flowId = parseInt(e.target.getAttribute('data-id'));
+                const flow = this.flows.find(f => f.id === flowId);
+                const newName = prompt('Enter a new name for the flow:', flow.name);
+                if (newName) {
+                    flow.name = newName;
+                    this.handleRouting();
+                }
+            });
+        });
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const flowId = parseInt(e.target.getAttribute('data-id'));
+                if (confirm('Are you sure you want to delete this flow?')) {
+                    this.flows = this.flows.filter(f => f.id !== flowId);
+                    this.handleRouting();
+                }
+            });
         });
     }
 };
