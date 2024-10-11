@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, GitFork } from 'lucide-react';
 import { useFlows } from '../contexts/FlowContext';
+import { useNavigate } from 'react-router-dom';
 
 const ManageFlows: React.FC = () => {
   const { getLiveFlows, deleteLiveFlow, updateLiveFlow } = useFlows();
   const [liveFlows, setLiveFlows] = useState(getLiveFlows());
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateFlows = () => setLiveFlows(getLiveFlows());
@@ -52,13 +54,22 @@ const ManageFlows: React.FC = () => {
                       <span className="ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded">Live</span>
                     )}
                   </span>
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
-                    onClick={() => handleSetLiveVersion(flow.id, version.metadata.version)}
-                    disabled={version.metadata.version === flow.liveVersion}
-                  >
-                    Set Live
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
+                      onClick={() => handleSetLiveVersion(flow.id, version.metadata.version)}
+                      disabled={version.metadata.version === flow.liveVersion}
+                    >
+                      Set Live
+                    </button>
+                    <button
+                      className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded flex items-center"
+                      onClick={() => navigate(`/fork-flow/${flow.id}/${version.metadata.version}`)}
+                    >
+                      <GitFork size={14} className="mr-1" />
+                      Fork
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

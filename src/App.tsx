@@ -6,6 +6,7 @@ import FlowEditor from './components/FlowEditor';
 import ManageFlows from './components/ManageFlows';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
+import ForkFlow from './components/ForkFlow';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = useAuth();
@@ -22,6 +23,7 @@ function AppContent() {
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/flows/:id" element={<ProtectedRoute><FlowEditor /></ProtectedRoute>} />
           <Route path="/manage-flows" element={<ProtectedRoute><ManageFlows /></ProtectedRoute>} />
+          <Route path="/fork-flow/:flowId/:version" element={<ProtectedRoute><ForkFlow /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>
