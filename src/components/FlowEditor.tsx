@@ -31,7 +31,7 @@ const FlowEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
-  const { updateTempFlowMetadata, tempFlows, publishFlow } = useFlows();
+  const { updateTempFlowMetadata, tempFlows, publishFlow, liveFlows } = useFlows();
   const [nextId, setNextId] = useState(1);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
