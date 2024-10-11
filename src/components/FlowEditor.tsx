@@ -30,7 +30,7 @@ const FlowEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
-  const { updateFlowMetadata } = useFlows();
+  const { updateFlowMetadata, flows, publishFlow } = useFlows();
   const [nextId, setNextId] = useState(1);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [saveAsNewVersion, setSaveAsNewVersion] = useState(false);
@@ -138,7 +138,7 @@ const FlowEditor: React.FC = () => {
   const handleSaveFlow = () => {
     if (flow) {
       if (saveAsNewVersion) {
-        publishFlow(flow, selectedFlow);
+        publishFlow(flow, parseInt(selectedFlow));
       } else {
         publishFlow(flow);
       }
