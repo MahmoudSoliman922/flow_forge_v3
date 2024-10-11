@@ -19,7 +19,7 @@ interface FlowContextType {
   deleteTempFlow: (id: number) => void;
   updateTempFlow: (flow: Flow) => void;
   updateTempFlowMetadata: (id: number, metadata: Partial<FlowMetadata>) => void;
-  publishFlow: (flow: Flow) => void;
+  publishFlow: (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => void;
   deleteLiveFlow: (id: number) => void;
 }
 
@@ -73,14 +73,27 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ));
   };
 
-  const publishFlow = (flow: Flow) => {
-    const newLiveFlow = {
-      ...flow,
-      id: Date.now(), // Assign a new id for the live flow
-      versions: [{ ...flow, id: Date.now() }],
-      liveVersion: flow.metadata.version
-    };
-    setLiveFlows([...liveFlows, newLiveFlow]);
+  const publishFlow = (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => {
+    if (isNewFlow) {
+      const newLiveFlow = {
+        ...flow,
+        id: Date.now(),
+        versions: [{ ...flow, id: Date.now() }],
+        liveVersion: flow.metadata.version
+      };
+      setLiveFlows([...liveFlows, newLiveFlow]);
+    } else if (existingFlowId) {
+      setLiveFlows(liveFlows.map(liveFlow => {
+        if (liveFlow.id === existingFlowId) {
+          return {
+            ...liveFlow,
+            versions: [...liveFlow.versions, { ...flow, id: Date.now() }],
+            liveVersion: flow.metadata.version
+          };
+        }
+        return liveFlow;
+      }));
+    }
     setTempFlows(tempFlows.filter(f => f.id !== flow.id));
   };
 

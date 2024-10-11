@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play } from 'lucide-react';
 import { useFlows } from '../contexts/FlowContext';
+import PublishFlowModal from './PublishFlowModal';
 
 interface Cell {
   id: number;
@@ -33,6 +34,7 @@ const FlowEditor: React.FC = () => {
   const { updateTempFlowMetadata, tempFlows, publishFlow } = useFlows();
   const [nextId, setNextId] = useState(1);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
 
   const servers = ['Server A', 'Server B', 'Server C'];
   const servicesByServer = {
@@ -121,7 +123,14 @@ const FlowEditor: React.FC = () => {
 
   const publishCurrentFlow = () => {
     if (flow) {
-      publishFlow(flow);
+      setShowPublishModal(true);
+    }
+  };
+
+  const handlePublish = (isNewFlow: boolean, existingFlowId?: number) => {
+    if (flow) {
+      publishFlow(flow, isNewFlow, existingFlowId);
+      setShowPublishModal(false);
       navigate('/live-flows');
     }
   };
@@ -358,6 +367,15 @@ const FlowEditor: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Publish Flow Modal */}
+      {showPublishModal && (
+        <PublishFlowModal
+          onClose={() => setShowPublishModal(false)}
+          onPublish={handlePublish}
+          liveFlows={liveFlows}
+        />
       )}
     </div>
   );
