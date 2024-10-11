@@ -32,9 +32,6 @@ const FlowEditor: React.FC = () => {
   const [flow, setFlow] = useState<Flow | null>(null);
   const { updateTempFlowMetadata, tempFlows, publishFlow } = useFlows();
   const [nextId, setNextId] = useState(1);
-  const [showSavePrompt, setShowSavePrompt] = useState(false);
-  const [saveAsNewVersion, setSaveAsNewVersion] = useState(false);
-  const [selectedFlow, setSelectedFlow] = useState('');
   const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   const servers = ['Server A', 'Server B', 'Server C'];
@@ -46,24 +43,15 @@ const FlowEditor: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      const storedFlows = JSON.parse(localStorage.getItem('flows') || '[]');
-      const currentFlow = storedFlows.find((f: Flow) => f.id === parseInt(id));
+      const currentFlow = tempFlows.find(f => f.id === parseInt(id));
       if (currentFlow) {
         setFlow(currentFlow);
-        setNextId(Math.max(...currentFlow.cells.map((cell: Cell) => cell.id)) + 1);
+        setNextId(Math.max(...currentFlow.cells.map(cell => cell.id)) + 1);
       } else {
         navigate('/');
       }
     }
-  }, [id, navigate]);
-
-  useEffect(() => {
-    if (flow) {
-      const storedFlows = JSON.parse(localStorage.getItem('flows') || '[]');
-      const updatedFlows = storedFlows.map((f: Flow) => f.id === flow.id ? flow : f);
-      localStorage.setItem('flows', JSON.stringify(updatedFlows));
-    }
-  }, [flow]);
+  }, [id, navigate, tempFlows]);
 
   const addCell = () => {
     if (flow) {
@@ -234,7 +222,7 @@ const FlowEditor: React.FC = () => {
                   value={flow.metadata.title}
                   onChange={(e) => {
                     setFlow({ ...flow, metadata: { ...flow.metadata, title: e.target.value } });
-                    updateFlowMetadata(flow.id, { title: e.target.value });
+                    updateTempFlowMetadata(flow.id, { title: e.target.value });
                   }}
                   className="mt-1 block w-full rounded-md input"
                 />
@@ -353,62 +341,6 @@ const FlowEditor: React.FC = () => {
           Publish Flow
         </button>
       </div>
-
-      {/* Publish Flow Prompt */}
-      {showSavePrompt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4 text-purple-400">Publish Flow</h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <input
-                  type="radio"
-                  checked={!saveAsNewVersion}
-                  onChange={() => setSaveAsNewVersion(false)}
-                  className="mr-2"
-                />
-                Publish as new flow
-              </label>
-              <label className="block text-sm font-medium text-gray-300">
-                <input
-                  type="radio"
-                  checked={saveAsNewVersion}
-                  onChange={() => setSaveAsNewVersion(true)}
-                  className="mr-2"
-                />
-                Publish as new version of existing flow
-              </label>
-            </div>
-            {saveAsNewVersion && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">Select Flow</label>
-                <select
-                  value={selectedFlow}
-                  onChange={(e) => setSelectedFlow(e.target.value)}
-                  className="w-full rounded-md select"
-                >
-                  <option value="">Select a flow</option>
-                  {flows.map(flow => (
-                    <option key={flow.id} value={flow.id}>{flow.metadata.title}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div className="flex justify-end space-x-4">
-              <button onClick={() => setShowSavePrompt(false)} className="btn btn-secondary">
-                Cancel
-              </button>
-              <button 
-                onClick={handleSaveFlow} 
-                className="btn btn-primary"
-                disabled={saveAsNewVersion && !selectedFlow}
-              >
-                Publish
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Confirm Reset Prompt */}
       {showConfirmReset && (
