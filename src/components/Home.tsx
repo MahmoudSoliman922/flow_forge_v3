@@ -41,10 +41,7 @@ const Home: React.FC = () => {
       },
       cells: [],
     };
-    const updatedFlows = [...flows, newFlow];
-    setFlows(updatedFlows);
-    localStorage.setItem('flows', JSON.stringify(updatedFlows));
-    navigate(`/flows/${newFlow.id}`);
+    setFlows([...flows, newFlow]);
   };
 
   const deleteFlow = (id: number) => {
@@ -60,6 +57,16 @@ const Home: React.FC = () => {
       <h1 className="text-4xl font-bold text-purple-400 mb-8 text-center">Welcome to Flow Forge</h1>
       <p className="text-xl text-gray-300 mb-12 text-center">Create and manage your flows with ease</p>
       
+      <div className="flex justify-center mb-8">
+        <button
+          onClick={addNewFlow}
+          className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-colors duration-200"
+          aria-label="Create new flow"
+        >
+          <Plus size={32} />
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {flows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -80,16 +87,6 @@ const Home: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="flex justify-center mt-8">
-        <button
-          onClick={addNewFlow}
-          className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-colors duration-200"
-          aria-label="Create new flow"
-        >
-          <Plus size={32} />
-        </button>
       </div>
     </div>
   );
