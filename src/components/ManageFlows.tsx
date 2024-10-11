@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, GitFork } from 'lucide-react';
+import { Trash2, GitFork, Check, XCircle } from 'lucide-react';
 import { useFlows } from '../contexts/FlowContext';
 import { useNavigate } from 'react-router-dom';
 
 const ManageFlows: React.FC = () => {
-  const { getLiveFlows, deleteLiveFlow, updateLiveFlow } = useFlows();
+  const { getLiveFlows, deleteLiveFlow, updateLiveFlow, deleteFlowVersion } = useFlows();
   const [liveFlows, setLiveFlows] = useState(getLiveFlows());
   const navigate = useNavigate();
 
@@ -27,6 +27,11 @@ const ManageFlows: React.FC = () => {
       updateLiveFlow({ ...flow, liveVersion: version });
       setLiveFlows(getLiveFlows());
     }
+  };
+
+  const handleDeleteVersion = (flowId: number, versionId: number) => {
+    deleteFlowVersion(flowId, versionId);
+    setLiveFlows(getLiveFlows());
   };
 
   return (
@@ -56,18 +61,27 @@ const ManageFlows: React.FC = () => {
                   </span>
                   <div className="flex space-x-2">
                     <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
+                      className={`text-white rounded p-1 ${version.metadata.version === flow.liveVersion ? 'bg-green-500' : 'bg-blue-500 hover:bg-blue-600'}`}
                       onClick={() => handleSetLiveVersion(flow.id, version.metadata.version)}
                       disabled={version.metadata.version === flow.liveVersion}
+                      title={version.metadata.version === flow.liveVersion ? "Current live version" : "Set as live version"}
                     >
-                      Set Live
+                      <Check size={16} />
                     </button>
                     <button
-                      className="bg-green-500 hover:bg-green-600 text-white text-sm px-2 py-1 rounded flex items-center"
+                      className="bg-green-500 hover:bg-green-600 text-white rounded p-1"
                       onClick={() => navigate(`/fork-flow/${flow.id}/${version.metadata.version}`)}
                       title="Fork this version"
                     >
                       <GitFork size={16} />
+                    </button>
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white rounded p-1"
+                      onClick={() => handleDeleteVersion(flow.id, version.id)}
+                      disabled={version.metadata.version === flow.liveVersion}
+                      title={version.metadata.version === flow.liveVersion ? "Cannot delete live version" : "Delete this version"}
+                    >
+                      <XCircle size={16} />
                     </button>
                   </div>
                 </li>

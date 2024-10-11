@@ -27,6 +27,7 @@ interface FlowContextType {
   publishFlow: (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => void;
   deleteLiveFlow: (id: number) => void;
   updateLiveFlow: (flow: LiveFlow) => void;
+  deleteFlowVersion: (flowId: number, versionId: number) => void;
 }
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
@@ -117,6 +118,16 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
   };
 
+  const deleteFlowVersion = (flowId: number, versionId: number) => {
+    setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => {
+      if (flow.id === flowId) {
+        const updatedVersions = flow.versions.filter(version => version.id !== versionId);
+        return { ...flow, versions: updatedVersions };
+      }
+      return flow;
+    }));
+  };
+
   return (
     <FlowContext.Provider value={{ 
       tempFlows, 
@@ -128,7 +139,8 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       publishFlow,
       deleteLiveFlow,
       updateLiveFlow,
-      getLiveFlows
+      getLiveFlows,
+      deleteFlowVersion
     }}>
       {children}
     </FlowContext.Provider>
