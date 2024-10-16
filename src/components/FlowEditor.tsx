@@ -133,7 +133,7 @@ const FlowEditor: React.FC = () => {
     if (flow) {
       publishFlow(flow, isNewFlow, existingFlowId);
       setShowPublishModal(false);
-      navigate('/live-flows');
+      navigate('/manage-flows');
     }
   };
 
