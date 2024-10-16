@@ -7,12 +7,13 @@ const Home: React.FC = () => {
   const { tempFlows, addTempFlow, deleteTempFlow } = useFlows();
   const navigate = useNavigate();
 
+  let tempFlowsLength = tempFlows ? tempFlows.length : 0
   const addNewFlow = () => {
     const newFlow = {
       id: Date.now(),
-      name: `New Flow ${tempFlows.length + 1}`, // Keep this for backward compatibility
+      name: `New Flow ${tempFlowsLength}`, // Keep this for backward compatibility
       metadata: {
-        title: `New Flow ${tempFlows.length + 1}`,
+        title: `New Flow ${tempFlowsLength}`,
         author: '',
         version: '1.0.0',
         description: '',
@@ -46,7 +47,7 @@ const Home: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tempFlows.map(flow => (
+        {tempFlows && tempFlows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-white mb-4">{flow.metadata.title || `New Flow ${flow.id}`}</h2>
             <div className="flex justify-end">

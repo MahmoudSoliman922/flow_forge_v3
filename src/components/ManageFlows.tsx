@@ -4,35 +4,59 @@ import { useFlows } from '../contexts/FlowContext';
 import { useNavigate } from 'react-router-dom';
 
 const ManageFlows: React.FC = () => {
-  const { getLiveFlows, deleteLiveFlow, updateLiveFlow, deleteFlowVersion } = useFlows();
-  const [liveFlows, setLiveFlows] = useState(getLiveFlows());
+  const { liveFlows, deleteLiveFlow, updateLiveFlow, deleteFlowVersion } = useFlows();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const updateFlows = () => setLiveFlows(getLiveFlows());
-    updateFlows();
+    setIsLoading(false);
+  }, [liveFlows]);
 
-    window.addEventListener('focus', updateFlows);
-    return () => window.removeEventListener('focus', updateFlows);
-  }, [getLiveFlows]);
-
-  const handleDeleteFlow = (id: number) => {
-    deleteLiveFlow(id);
-    setLiveFlows(getLiveFlows());
-  };
-
-  const handleSetLiveVersion = (flowId: number, version: string) => {
-    const flow = liveFlows.find(f => f.id === flowId);
-    if (flow) {
-      updateLiveFlow({ ...flow, liveVersion: version });
-      setLiveFlows(getLiveFlows());
+  const handleDeleteFlow = async (id: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await deleteLiveFlow(id);
+    } catch (err) {
+      setError('Failed to delete flow');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteVersion = (flowId: number, versionId: number) => {
-    deleteFlowVersion(flowId, versionId);
-    setLiveFlows(getLiveFlows());
+  const handleSetLiveVersion = async (flowId: number, version: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const flow = liveFlows.find(f => f.id === flowId);
+      if (flow) {
+        await updateLiveFlow({ ...flow, liveVersion: version });
+      }
+    } catch (err) {
+      setError('Failed to set live version');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleDeleteVersion = async (flowId: number, versionId: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await deleteFlowVersion(flowId, versionId);
+    } catch (err) {
+      setError('Failed to delete version');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto px-4">
@@ -41,7 +65,7 @@ const ManageFlows: React.FC = () => {
         {liveFlows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-white">{flow.metadata.title}</h2>
+              <h2 className="text-2xl font-bold text-white">{flow.name}</h2>
               <button 
                 className="bg-red-500 hover:bg-red-600 text-white rounded p-2"
                 onClick={() => handleDeleteFlow(flow.id)}

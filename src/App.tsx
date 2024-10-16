@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FlowProvider } from './contexts/FlowContext';
@@ -12,6 +13,29 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { isLoggedIn } = useAuth();
   return isLoggedIn ? <>{children}</> : <Navigate to="/login" />;
 };
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
 
 function AppContent() {
   return (
@@ -32,13 +56,15 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <FlowProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </FlowProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <FlowProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </FlowProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

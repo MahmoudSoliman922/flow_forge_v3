@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 interface Flow {
   id: number;
@@ -20,15 +21,17 @@ interface LiveFlow extends Flow {
 interface FlowContextType {
   tempFlows: Flow[];
   liveFlows: LiveFlow[];
-  addTempFlow: (flow: Flow) => void;
-  deleteTempFlow: (id: number) => void;
-  updateTempFlow: (flow: Flow) => void;
-  updateTempFlowMetadata: (id: number, metadata: Partial<Flow['metadata']>) => void;
-  publishFlow: (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => void;
-  deleteLiveFlow: (id: number) => void;
-  updateLiveFlow: (flow: LiveFlow) => void;
-  deleteFlowVersion: (flowId: number, versionId: number) => void;
+  addTempFlow: (flow: Flow) => Promise<void>;
+  deleteTempFlow: (id: number) => Promise<void>;
+  updateTempFlow: (flow: Flow) => Promise<void>;
+  updateTempFlowMetadata: (id: number, metadata: Partial<Flow['metadata']>) => Promise<void>;
+  publishFlow: (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => Promise<void>;
+  deleteLiveFlow: (id: number) => Promise<void>;
+  updateLiveFlow: (flow: LiveFlow) => Promise<void>;
+  deleteFlowVersion: (flowId: number, versionId: number) => Promise<void>;
 }
+
+const API_BASE_URL = 'http://localhost:8080'; // Update this if your backend is on a different port
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
@@ -45,87 +48,106 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [liveFlows, setLiveFlows] = useState<LiveFlow[]>([]);
 
   useEffect(() => {
-    const storedTempFlows = localStorage.getItem('tempFlows');
-    const storedLiveFlows = localStorage.getItem('liveFlows');
-    if (storedTempFlows) {
-      setTempFlows(JSON.parse(storedTempFlows));
-    }
-    if (storedLiveFlows) {
-      setLiveFlows(JSON.parse(storedLiveFlows));
-    }
+    const fetchFlows = async () => {
+      try {
+        const tempResponse = await axios.get(`${API_BASE_URL}/temp-flows`);
+        const liveResponse = await axios.get(`${API_BASE_URL}/live-flows`);
+        setTempFlows(tempResponse.data);
+        setLiveFlows(liveResponse.data);
+      } catch (error) {
+        console.error('Error fetching flows:', error);
+      }
+    };
+    fetchFlows();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('tempFlows', JSON.stringify(tempFlows));
-    localStorage.setItem('liveFlows', JSON.stringify(liveFlows));
-  }, [tempFlows, liveFlows]);
-
-  const addTempFlow = (flow: Flow) => {
-    setTempFlows(prevFlows => [...prevFlows, flow]);
-  };
-
-  const deleteTempFlow = (id: number) => {
-    setTempFlows(prevFlows => prevFlows.filter(flow => flow.id !== id));
-  };
-
-  const updateTempFlow = (updatedFlow: Flow) => {
-    setTempFlows(prevFlows => prevFlows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
-  };
-
-  const updateTempFlowMetadata = (id: number, metadata: Partial<Flow['metadata']>) => {
-    setTempFlows(prevFlows => prevFlows.map(flow => 
-      flow.id === id 
-        ? { ...flow, metadata: { ...flow.metadata, ...metadata } }
-        : flow
-    ));
-  };
-
-  const publishFlow = (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => {
-    if (isNewFlow) {
-      const newLiveFlow: LiveFlow = {
-        ...flow,
-        id: Date.now(),
-        versions: [{ ...flow, id: Date.now() }],
-        liveVersion: flow.metadata.version
-      };
-      setLiveFlows(prevLiveFlows => [...prevLiveFlows, newLiveFlow]);
-    } else if (existingFlowId) {
-      setLiveFlows(prevLiveFlows => prevLiveFlows.map(liveFlow => {
-        if (liveFlow.id === existingFlowId) {
-          return {
-            ...liveFlow,
-            versions: [...liveFlow.versions, { ...flow, id: Date.now() }],
-            // Don't change the liveVersion when adding a new version
-            // liveVersion: flow.metadata.version
-          };
-        }
-        return liveFlow;
-      }));
+  const addTempFlow = async (flow: Flow) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/temp-flows`, flow);
+      console.log(response)
+      setTempFlows(prevFlows => [...prevFlows, response.data]);
+    } catch (error) {
+      console.error('Error adding temp flow:', error);
     }
-    setTempFlows(prevTempFlows => prevTempFlows.filter(f => f.id !== flow.id));
   };
 
-  // Add this function to get live flows
-  const getLiveFlows = () => {
-    return liveFlows;
+  const deleteTempFlow = async (id: number) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/temp-flows/${id}`);
+      setTempFlows(prevFlows => prevFlows.filter(flow => flow.id !== id));
+    } catch (error) {
+      console.error('Error deleting temp flow:', error);
+    }
   };
 
-  const deleteLiveFlow = (id: number) => {
-    setLiveFlows(prevLiveFlows => prevLiveFlows.filter(flow => flow.id !== id));
+  const updateTempFlow = async (updatedFlow: Flow) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/temp-flows/${updatedFlow.id}`, updatedFlow);
+      setTempFlows(prevFlows => prevFlows.map(flow => flow.id === updatedFlow.id ? response.data : flow));
+    } catch (error) {
+      console.error('Error updating temp flow:', error);
+    }
   };
 
-  const updateLiveFlow = (updatedFlow: LiveFlow) => {
-    setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => flow.id === updatedFlow.id ? updatedFlow : flow));
+  const updateTempFlowMetadata = async (id: number, metadata: Partial<Flow['metadata']>) => {
+    try {
+      const response = await axios.patch(`${API_BASE_URL}/temp-flows/${id}/metadata`, metadata);
+      setTempFlows(prevFlows => prevFlows.map(flow => 
+        flow.id === id ? { ...flow, metadata: { ...flow.metadata, ...response.data } } : flow
+      ));
+    } catch (error) {
+      console.error('Error updating temp flow metadata:', error);
+    }
   };
 
-  const deleteFlowVersion = (flowId: number, versionId: number) => {
-    setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => {
-      if (flow.id === flowId) {
-        const updatedVersions = flow.versions.filter(version => version.id !== versionId);
-        return { ...flow, versions: updatedVersions };
+  const publishFlow = async (flow: Flow, isNewFlow: boolean, existingFlowId?: number) => {
+    try {
+      if (isNewFlow) {
+        const response = await axios.post(`${API_BASE_URL}/live-flows`, flow);
+        setLiveFlows(prevLiveFlows => [...prevLiveFlows, response.data]);
+      } else if (existingFlowId) {
+        const response = await axios.post(`${API_BASE_URL}/live-flows/${existingFlowId}/versions`, flow);
+        setLiveFlows(prevLiveFlows => prevLiveFlows.map(liveFlow => 
+          liveFlow.id === existingFlowId ? response.data : liveFlow
+        ));
       }
-      return flow;
-    }));
+      await deleteTempFlow(flow.id);
+    } catch (error) {
+      console.error('Error publishing flow:', error);
+    }
+  };
+
+  const deleteLiveFlow = async (id: number) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/live-flows/${id}`);
+      setLiveFlows(prevLiveFlows => prevLiveFlows.filter(flow => flow.id !== id));
+    } catch (error) {
+      console.error('Error deleting live flow:', error);
+    }
+  };
+
+  const updateLiveFlow = async (updatedFlow: LiveFlow) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/live-flows/${updatedFlow.id}`, updatedFlow);
+      setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => flow.id === updatedFlow.id ? response.data : flow));
+    } catch (error) {
+      console.error('Error updating live flow:', error);
+    }
+  };
+
+  const deleteFlowVersion = async (flowId: number, versionId: number) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/live-flows/${flowId}/versions/${versionId}`);
+      setLiveFlows(prevLiveFlows => prevLiveFlows.map(flow => {
+        if (flow.id === flowId) {
+          const updatedVersions = flow.versions.filter(version => version.id !== versionId);
+          return { ...flow, versions: updatedVersions };
+        }
+        return flow;
+      }));
+    } catch (error) {
+      console.error('Error deleting flow version:', error);
+    }
   };
 
   return (
@@ -139,7 +161,6 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       publishFlow,
       deleteLiveFlow,
       updateLiveFlow,
-      getLiveFlows,
       deleteFlowVersion
     }}>
       {children}
