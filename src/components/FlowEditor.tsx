@@ -31,12 +31,13 @@ const FlowEditor: React.FC = () => {
       try {
         if (id) {
           const existingFlow = tempFlows.find(f => f.id === parseInt(id));
+          console.log("tempFlows", tempFlows, "id", id)
           if (existingFlow) {
             setFlow(existingFlow);
             setNextId(Math.max(...existingFlow.cells.map((cell: Cell) => cell.id), 0) + 1);
           } else {
             setError('Flow not found');
-            navigate('/manage-flows'); // Redirect to manage flows page if flow is not found
+            // navigate('/manage-flows'); // Redirect to manage flows page if flow is not found
           }
         } else {
           const newFlow: Flow = {
