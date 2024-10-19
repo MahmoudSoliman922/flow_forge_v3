@@ -18,14 +18,14 @@ import React, { useEffect, useState } from 'react';
        try {                                                                               
          const flow = liveFlows.find(f => f.id === Number(flowId));                        
          if (flow) {                                                                       
-           const versionData = flow.versions.find(v => v.metadata.version === version);    
+           const versionData = flow.versions.find(v => v.metadata?.version === version);    
            if (versionData) {                                                              
              const forkedFlow = {                                                          
                ...versionData,                                                             
                id: Date.now(), // Generate a new ID for the forked flow                    
                metadata: {                                                                 
                  ...versionData.metadata,                                                  
-                 title: `Fork of ${versionData.metadata.title}`,                           
+                 title: `Fork of ${versionData.metadata?.title}`,                           
                  version: '1.0.0', // Reset version for the new fork                       
                },                                                                          
              };                                                                            
