@@ -35,7 +35,8 @@ const FlowEditor: React.FC = () => {
             setFlow(existingFlow);
             setNextId(Math.max(...existingFlow.cells.map((cell: Cell) => cell.id), 0) + 1);
           } else {
-            throw new Error('Flow not found');
+            setError('Flow not found');
+            navigate('/manage-flows'); // Redirect to manage flows page if flow is not found
           }
         } else {
           const newFlow: Flow = {
