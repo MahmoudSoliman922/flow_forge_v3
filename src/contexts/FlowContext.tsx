@@ -18,7 +18,7 @@ export interface Flow {
     author: string;
     version: string;
     description: string;
-  };
+  } | null;
   cells: Cell[];
 }
 
