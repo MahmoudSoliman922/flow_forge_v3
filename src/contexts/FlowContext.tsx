@@ -1,7 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-interface Flow {
+export interface Cell {
+  id: number;
+  code: string;
+  dependencies: string;
+  server: string;
+  service: string;
+  output?: string;
+}
+
+export interface Flow {
   id: number;
   name: string;
   metadata: {
@@ -10,10 +19,10 @@ interface Flow {
     version: string;
     description: string;
   };
-  cells: any[];
+  cells: Cell[];
 }
 
-interface LiveFlow extends Flow {
+export interface LiveFlow extends Flow {
   versions: Flow[];
   liveVersion: string;
 }
@@ -31,7 +40,7 @@ interface FlowContextType {
   deleteFlowVersion: (flowId: number, versionId: number) => Promise<void>;
 }
 
-const API_BASE_URL = 'http://localhost:8080'; // Update this if your backend is on a different port
+const API_BASE_URL = 'http://localhost:8080';
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
@@ -52,10 +61,12 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const tempResponse = await axios.get(`${API_BASE_URL}/temp-flows`);
         const liveResponse = await axios.get(`${API_BASE_URL}/live-flows`);
-        setTempFlows(tempResponse.data);
-        setLiveFlows(liveResponse.data);
+        setTempFlows(tempResponse.data || []);
+        setLiveFlows(liveResponse.data || []);
       } catch (error) {
         console.error('Error fetching flows:', error);
+        setTempFlows([]);
+        setLiveFlows([]);
       }
     };
     fetchFlows();
@@ -64,7 +75,6 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addTempFlow = async (flow: Flow) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/temp-flows`, flow);
-      console.log(response)
       setTempFlows(prevFlows => [...prevFlows, response.data]);
     } catch (error) {
       console.error('Error adding temp flow:', error);
