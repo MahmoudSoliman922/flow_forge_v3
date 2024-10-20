@@ -46,7 +46,6 @@ const FlowEditor: React.FC = () => {
         } else {
           const newFlow: Flow = {
             id: Date.now(),
-            name: 'New Flow',
             metadata: {
               title: 'Untitled Flow',
               author: user?.email || '',

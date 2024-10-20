@@ -65,7 +65,7 @@ const ManageFlows: React.FC = () => {
         {liveFlows.map(flow => (
           <div key={flow.id} className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-white">{flow.name}</h2>
+              <h2 className="text-2xl font-bold text-white">{flow.metadata.title}</h2>
               <button 
                 className="bg-red-500 hover:bg-red-600 text-white rounded p-2"
                 onClick={() => handleDeleteFlow(flow.id)}

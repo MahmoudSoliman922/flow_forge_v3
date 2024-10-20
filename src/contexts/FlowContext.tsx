@@ -12,13 +12,12 @@ export interface Cell {
 
 export interface Flow {
   id: number;
-  name: string;
   metadata: {
     title: string;
     author: string;
     version: string;
     description: string;
-  } | null;
+  };
   cells: Cell[];
 }
 
