@@ -231,11 +231,10 @@ const FlowEditor: React.FC = () => {
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-2">Dependencies</label>
-              <input
-                type="text"
+              <textarea
                 value={cell.dependencies}
                 onChange={(e) => updateCell(cell.id, 'dependencies', e.target.value)}
-                className="w-full rounded-md bg-gray-700 text-white p-2"
+                className="w-full h-32 rounded-md bg-gray-700 text-white p-2 font-mono"
               />
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
