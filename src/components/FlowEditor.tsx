@@ -111,8 +111,41 @@ const FlowEditor: React.FC = () => {
     if (flow) {
       const newCell: Cell = {
         id: nextId,
-        code: '// Enter your code here',
-        dependencies: '',
+        code: `
+        booking = Booking.create(booking_params)
+
+        # your script MUST have this field at the end, whatever you want to present in the console or
+        # use as input for other scripts should be included here, otherwise it won't be visible or usable
+        # by other scripts
+        output = {
+          booking: booking
+        }
+        `,
+        dependencies: `
+        [
+          {
+            input_from: "user" => can be one of those: "user" | "script"
+            input_schema: {
+              "unit_code": {
+                "type": string,
+                "required": true
+              },
+              "eligible?": {
+                "type": bool,
+                "required": false
+              }
+            },
+            input_name: "booking_params",
+            input_type: "list" => can be of of those: "object" | "list", list means that its an array of objects
+          },
+          {
+            input_from: "script",
+            script_number: "2" => script number have to be 2 or higher
+            input_name: "booking"  => coming from the output field in script 2
+            input_type: "object"
+          }
+        ]
+        `,
         server: servers[0],
         service: servicesByServer[servers[0]][0]
       };

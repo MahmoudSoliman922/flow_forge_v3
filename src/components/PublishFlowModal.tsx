@@ -51,7 +51,7 @@ const PublishFlowModal: React.FC<PublishFlowModalProps> = ({ onClose, onPublish,
               <option value="">Select a flow</option>
               {liveFlows.map((flow) => (
                 <option key={flow.id} value={flow.id}>
-                  {flow.metadata ? flow.metadata.title : 'Untitled Flow'}
+                  {flow.versions[0].metadata ? flow.versions[0].metadata.title : 'Untitled Flow'}
                 </option>
               ))}
             </select>
