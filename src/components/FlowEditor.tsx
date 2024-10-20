@@ -10,6 +10,7 @@ const FlowEditor: React.FC = () => {
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
   const [localMetadata, setLocalMetadata] = useState<Flow['metadata'] | null>(null);
+  const [localCells, setLocalCells] = useState<Cell[]>([]);
   const { addTempFlow, updateTempFlow, updateTempFlowMetadata, publishFlow, liveFlows, tempFlows } = useFlows();
   const { user } = useAuth();
   const [nextId, setNextId] = useState(1);
@@ -36,6 +37,7 @@ const FlowEditor: React.FC = () => {
           if (existingFlow) {
             setFlow(existingFlow);
             setLocalMetadata(existingFlow.metadata);
+            setLocalCells(existingFlow.cells);
             setNextId(Math.max(...existingFlow.cells.map((cell: Cell) => cell.id), 0) + 1);
           } else {
             setError('Flow not found');
@@ -56,6 +58,7 @@ const FlowEditor: React.FC = () => {
           await addTempFlow(newFlow);
           setFlow(newFlow);
           setLocalMetadata(newFlow.metadata);
+          setLocalCells(newFlow.cells);
         }
       } catch (err) {
         console.error(err);
@@ -114,26 +117,31 @@ const FlowEditor: React.FC = () => {
         server: servers[0],
         service: servicesByServer[servers[0]][0]
       };
-      const updatedFlow = { ...flow, cells: [...flow.cells, newCell] };
-      setFlow(updatedFlow);
+      const updatedCells = [...localCells, newCell];
+      setLocalCells(updatedCells);
       setNextId(nextId + 1);
-      updateTempFlow(updatedFlow);
     }
   };
 
-  const updateCell = (id: number, field: keyof Cell, value: string) => {
+  const updateLocalCell = (id: number, field: keyof Cell, value: string) => {
+    setLocalCells(prevCells =>
+      prevCells.map(cell => {
+        if (cell.id === id) {
+          if (field === 'server') {
+            return { ...cell, [field]: value, service: servicesByServer[value][0] };
+          }
+          return { ...cell, [field]: value };
+        }
+        return cell;
+      })
+    );
+  };
+
+  const handleCellBlur = () => {
     if (flow) {
       const updatedFlow = {
         ...flow,
-        cells: flow.cells.map(cell => {
-          if (cell.id === id) {
-            if (field === 'server') {
-              return { ...cell, [field]: value, service: servicesByServer[value][0] };
-            }
-            return { ...cell, [field]: value };
-          }
-          return cell;
-        })
+        cells: localCells
       };
       setFlow(updatedFlow);
       updateTempFlow(updatedFlow);
@@ -141,28 +149,23 @@ const FlowEditor: React.FC = () => {
   };
 
   const deleteCell = (id: number) => {
-    if (flow) {
-      const updatedFlow = { ...flow, cells: flow.cells.filter(cell => cell.id !== id) };
-      setFlow(updatedFlow);
-      updateTempFlow(updatedFlow);
-    }
+    setLocalCells(prevCells => prevCells.filter(cell => cell.id !== id));
+    handleCellBlur();
   };
 
   const executeCell = async (id: number) => {
     if (flow) {
-      const cellToExecute = flow.cells.find(cell => cell.id === id);
+      const cellToExecute = localCells.find(cell => cell.id === id);
       if (cellToExecute) {
         setIsLoading(true);
         setError(null);
         try {
           // Mock execution for now
           const executedCell = { ...cellToExecute, output: `Executed cell ${id}\nOutput: Success` };
-          const updatedFlow = {
-            ...flow,
-            cells: flow.cells.map(cell => cell.id === id ? executedCell : cell)
-          };
-          setFlow(updatedFlow);
-          updateTempFlow(updatedFlow);
+          setLocalCells(prevCells =>
+            prevCells.map(cell => cell.id === id ? executedCell : cell)
+          );
+          handleCellBlur();
         } catch (err) {
           setError('Error executing cell');
           console.error(err);
@@ -230,14 +233,15 @@ const FlowEditor: React.FC = () => {
       {/* Cells */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-4 text-purple-400">Cells</h2>
-        {flow.cells.map((cell, index) => (
+        {localCells.map((cell, index) => (
           <div key={cell.id} className="bg-gray-800 p-6 rounded-lg shadow-md mb-4">
             <h3 className="text-xl font-bold mb-2 text-purple-300">Cell #{index + 1}</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-2">Code</label>
               <textarea
                 value={cell.code}
-                onChange={(e) => updateCell(cell.id, 'code', e.target.value)}
+                onChange={(e) => updateLocalCell(cell.id, 'code', e.target.value)}
+                onBlur={handleCellBlur}
                 className="w-full h-32 rounded-md bg-gray-700 text-white p-2 font-mono"
               />
             </div>
@@ -245,7 +249,8 @@ const FlowEditor: React.FC = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">Dependencies</label>
               <textarea
                 value={cell.dependencies}
-                onChange={(e) => updateCell(cell.id, 'dependencies', e.target.value)}
+                onChange={(e) => updateLocalCell(cell.id, 'dependencies', e.target.value)}
+                onBlur={handleCellBlur}
                 className="w-full h-32 rounded-md bg-gray-700 text-white p-2 font-mono"
               />
             </div>
@@ -254,7 +259,8 @@ const FlowEditor: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Server</label>
                 <select
                   value={cell.server}
-                  onChange={(e) => updateCell(cell.id, 'server', e.target.value)}
+                  onChange={(e) => updateLocalCell(cell.id, 'server', e.target.value)}
+                  onBlur={handleCellBlur}
                   className="w-full rounded-md bg-gray-700 text-white p-2"
                 >
                   {servers.map(server => (
@@ -266,7 +272,8 @@ const FlowEditor: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Service</label>
                 <select
                   value={cell.service}
-                  onChange={(e) => updateCell(cell.id, 'service', e.target.value)}
+                  onChange={(e) => updateLocalCell(cell.id, 'service', e.target.value)}
+                  onBlur={handleCellBlur}
                   className="w-full rounded-md bg-gray-700 text-white p-2"
                 >
                   {servicesByServer[cell.server].map(service => (
