@@ -9,6 +9,7 @@ const FlowEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [flow, setFlow] = useState<Flow | null>(null);
+  const [localMetadata, setLocalMetadata] = useState<Flow['metadata'] | null>(null);
   const { addTempFlow, updateTempFlow, updateTempFlowMetadata, publishFlow, liveFlows, tempFlows } = useFlows();
   const { user } = useAuth();
   const [nextId, setNextId] = useState(1);
@@ -34,6 +35,7 @@ const FlowEditor: React.FC = () => {
           console.log("tempFlows", tempFlows, "id", id)
           if (existingFlow) {
             setFlow(existingFlow);
+            setLocalMetadata(existingFlow.metadata);
             setNextId(Math.max(...existingFlow.cells.map((cell: Cell) => cell.id), 0) + 1);
           } else {
             setError('Flow not found');
@@ -53,6 +55,7 @@ const FlowEditor: React.FC = () => {
           };
           await addTempFlow(newFlow);
           setFlow(newFlow);
+          setLocalMetadata(newFlow.metadata);
         }
       } catch (err) {
         console.error(err);
@@ -65,14 +68,20 @@ const FlowEditor: React.FC = () => {
     fetchOrCreateFlow();
   }, [id, user, addTempFlow, tempFlows]);
 
-  const handleMetadataChange = (field: keyof Flow['metadata'], value: string) => {
-    if (flow) {
+  const handleLocalMetadataChange = (field: keyof Flow['metadata'], value: string) => {
+    if (localMetadata) {
+      setLocalMetadata({
+        ...localMetadata,
+        [field]: value
+      });
+    }
+  };
+
+  const handleMetadataBlur = () => {
+    if (flow && localMetadata) {
       const updatedFlow = {
         ...flow,
-        metadata: {
-          ...flow.metadata,
-          [field]: value
-        }
+        metadata: localMetadata
       };
       setFlow(updatedFlow);
       updateTempFlow(updatedFlow);
@@ -166,7 +175,7 @@ const FlowEditor: React.FC = () => {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!flow) return <div>No flow found</div>;
+  if (!flow || !localMetadata) return <div>No flow found</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -180,8 +189,9 @@ const FlowEditor: React.FC = () => {
             <label className="block text-sm font-medium text-gray-300">Title</label>
             <input
               type="text"
-              value={flow.metadata.title}
-              onChange={(e) => handleMetadataChange('title', e.target.value)}
+              value={localMetadata.title}
+              onChange={(e) => handleLocalMetadataChange('title', e.target.value)}
+              onBlur={handleMetadataBlur}
               className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
             />
           </div>
@@ -189,7 +199,7 @@ const FlowEditor: React.FC = () => {
             <label className="block text-sm font-medium text-gray-300">Author</label>
             <input
               type="text"
-              value={flow.metadata.author}
+              value={localMetadata.author}
               readOnly
               className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
             />
@@ -198,8 +208,9 @@ const FlowEditor: React.FC = () => {
             <label className="block text-sm font-medium text-gray-300">Version</label>
             <input
               type="text"
-              value={flow.metadata.version}
-              onChange={(e) => handleMetadataChange('version', e.target.value)}
+              value={localMetadata.version}
+              onChange={(e) => handleLocalMetadataChange('version', e.target.value)}
+              onBlur={handleMetadataBlur}
               className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
             />
           </div>
@@ -207,8 +218,9 @@ const FlowEditor: React.FC = () => {
             <label className="block text-sm font-medium text-gray-300">Description</label>
             <input
               type="text"
-              value={flow.metadata.description}
-              onChange={(e) => handleMetadataChange('description', e.target.value)}
+              value={localMetadata.description}
+              onChange={(e) => handleLocalMetadataChange('description', e.target.value)}
+              onBlur={handleMetadataBlur}
               className="mt-1 block w-full rounded-md bg-gray-700 text-white p-2"
             />
           </div>
