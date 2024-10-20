@@ -161,10 +161,13 @@ const FlowEditor: React.FC = () => {
         setError(null);
         try {
           // Mock execution for now
-          const executedCell = { ...cellToExecute, output: `Executed cell ${id}\nOutput: Success` };
-          setLocalCells(prevCells =>
-            prevCells.map(cell => cell.id === id ? executedCell : cell)
-          );
+          const newOutput = `Executed cell ${id}\nOutput: Success ${Date.now()}`;
+          if (newOutput !== cellToExecute.output) {
+            const executedCell = { ...cellToExecute, output: newOutput };
+            setLocalCells(prevCells =>
+              prevCells.map(cell => cell.id === id ? executedCell : cell)
+            );
+          }
         } catch (err) {
           setError('Error executing cell');
           console.error(err);
