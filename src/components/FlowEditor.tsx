@@ -165,7 +165,6 @@ const FlowEditor: React.FC = () => {
           setLocalCells(prevCells =>
             prevCells.map(cell => cell.id === id ? executedCell : cell)
           );
-          handleCellBlur();
         } catch (err) {
           setError('Error executing cell');
           console.error(err);
