@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play, Trash2 } from 'lucide-react';
 import { useFlows, Flow, Cell } from '../contexts/FlowContext';
@@ -206,17 +207,36 @@ const FlowEditor: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-          // Mock execution for now
-          const newOutput = `Executed cell ${id}\nOutput: Success ${Date.now()}`;
+          const response = await axios.post(`${API_BASE_URL}/execute`, {
+            flowId: flow.id,
+            cellId: id,
+            code: cellToExecute.code,
+            server: cellToExecute.server,
+            service: cellToExecute.service,
+            dependencies: cellToExecute.dependencies
+          });
+
+          const newOutput = response.data.output;
           if (newOutput !== cellToExecute.output) {
             const executedCell = { ...cellToExecute, output: newOutput };
             setLocalCells(prevCells =>
               prevCells.map(cell => cell.id === id ? executedCell : cell)
             );
+            // Update the flow with the new cell output
+            if (flow) {
+              const updatedFlow = {
+                ...flow,
+                cells: flow.cells.map(cell => 
+                  cell.id === id ? executedCell : cell
+                )
+              };
+              setFlow(updatedFlow);
+              updateTempFlow(updatedFlow);
+            }
           }
         } catch (err) {
-          setError('Error executing cell');
-          console.error(err);
+          console.error('Error executing cell:', err);
+          setError(err.response?.data?.message || 'Error executing cell');
         } finally {
           setIsLoading(false);
         }
