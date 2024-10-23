@@ -211,6 +211,16 @@ const FlowEditor: React.FC = () => {
             setLocalCells(prevCells =>
               prevCells.map(cell => cell.id === id ? executedCell : cell)
             );
+            if (flow) {
+              const updatedFlow = {
+                ...flow,
+                cells: localCells.map(cell => 
+                  cell.id === id ? executedCell : cell
+                )
+              };
+              setFlow(updatedFlow);
+              updateTempFlow(updatedFlow);
+            }
           }
         } catch (err) {
           console.error('Error executing cell:', err);
