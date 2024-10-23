@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Save, Download, Upload, RefreshCw, Play, Trash2 } from 'lucide-react';
 import { useFlows, Flow, Cell } from '../contexts/FlowContext';
@@ -34,7 +33,6 @@ const FlowEditor: React.FC = () => {
       try {
         if (id) {
           const existingFlow = tempFlows.find(f => f.id === parseInt(id));
-          console.log("tempFlows", tempFlows, "id", id)
           if (existingFlow) {
             setFlow(existingFlow);
             setLocalMetadata(existingFlow.metadata);
@@ -42,7 +40,7 @@ const FlowEditor: React.FC = () => {
             setNextId(Math.max(...existingFlow.cells.map((cell: Cell) => cell.id), 0) + 1);
           } else {
             setError('Flow not found');
-            // navigate('/manage-flows'); // Redirect to manage flows page if flow is not found
+            navigate('/manage-flows'); // Redirect to manage flows page if flow is not found
           }
         } else {
           const newFlow: Flow = {
@@ -213,15 +211,6 @@ const FlowEditor: React.FC = () => {
             setLocalCells(prevCells =>
               prevCells.map(cell => cell.id === id ? executedCell : cell)
             );
-            const updatedFlow = {
-              ...flow,
-              cells: flow.cells.map(cell => 
-                cell.id === id ? executedCell : cell
-              )
-            };
-            console.log('updatedFlow', updatedFlow)
-            setFlow(updatedFlow);
-            updateTempFlow(updatedFlow);
           }
         } catch (err) {
           console.error('Error executing cell:', err);
@@ -347,7 +336,9 @@ const FlowEditor: React.FC = () => {
             )}
             <div className="flex justify-end space-x-2">
               <button
-                onClick={() => executeCell(cell.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  executeCell(cell.id)}}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
               >
                 <Play className="inline-block mr-2" size={16} />
