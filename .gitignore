@@ -25,3 +25,4 @@ dist-ssr
 
 # Aider-related files and directories
 .aider*
+.env

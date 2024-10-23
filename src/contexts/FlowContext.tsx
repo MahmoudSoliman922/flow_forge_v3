@@ -164,7 +164,7 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await axios.post(`${API_BASE_URL}/execute`, {
         flowId,
-        cellId: cell.id,
+        id: cell.id,
         code: cell.code,
         server: cell.server,
         service: cell.service,
