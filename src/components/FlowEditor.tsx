@@ -207,32 +207,20 @@ const FlowEditor: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await axios.post(`${API_BASE_URL}/execute`, {
-            flowId: flow.id,
-            cellId: id,
-            code: cellToExecute.code,
-            server: cellToExecute.server,
-            service: cellToExecute.service,
-            dependencies: cellToExecute.dependencies
-          });
-
-          const newOutput = response.data.output;
+          const newOutput = await executeCell(flow.id, cellToExecute);
           if (newOutput !== cellToExecute.output) {
             const executedCell = { ...cellToExecute, output: newOutput };
             setLocalCells(prevCells =>
               prevCells.map(cell => cell.id === id ? executedCell : cell)
             );
-            // Update the flow with the new cell output
-            if (flow) {
-              const updatedFlow = {
-                ...flow,
-                cells: flow.cells.map(cell => 
-                  cell.id === id ? executedCell : cell
-                )
-              };
-              setFlow(updatedFlow);
-              updateTempFlow(updatedFlow);
-            }
+            const updatedFlow = {
+              ...flow,
+              cells: flow.cells.map(cell => 
+                cell.id === id ? executedCell : cell
+              )
+            };
+            setFlow(updatedFlow);
+            updateTempFlow(updatedFlow);
           }
         } catch (err) {
           console.error('Error executing cell:', err);

@@ -37,6 +37,7 @@ interface FlowContextType {
   deleteLiveFlow: (id: number) => Promise<void>;
   updateLiveFlow: (flow: LiveFlow) => Promise<void>;
   deleteFlowVersion: (flowId: number, versionId: number) => Promise<void>;
+  executeCell: (flowId: number, cell: Cell) => Promise<string>;
 }
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -159,6 +160,23 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const executeCell = async (flowId: number, cell: Cell): Promise<string> => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/execute`, {
+        flowId,
+        cellId: cell.id,
+        code: cell.code,
+        server: cell.server,
+        service: cell.service,
+        dependencies: cell.dependencies
+      });
+      return response.data.output;
+    } catch (error) {
+      console.error('Error executing cell:', error);
+      throw error;
+    }
+  };
+
   return (
     <FlowContext.Provider value={{ 
       tempFlows, 
@@ -170,7 +188,8 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
       publishFlow,
       deleteLiveFlow,
       updateLiveFlow,
-      deleteFlowVersion
+      deleteFlowVersion,
+      executeCell
     }}>
       {children}
     </FlowContext.Provider>
