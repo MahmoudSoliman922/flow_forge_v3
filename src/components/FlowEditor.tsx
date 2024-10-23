@@ -180,9 +180,23 @@ const FlowEditor: React.FC = () => {
     }
   };
 
-  const deleteCell = (id: number) => {
-    setLocalCells(prevCells => prevCells.filter(cell => cell.id !== id));
-    handleCellBlur();
+  const deleteCell = async (id: number) => {
+    // Update local cells
+    setLocalCells(prevCells => {
+      const updatedCells = prevCells.filter(cell => cell.id !== id);
+      
+      // Update the flow with the new cells
+      if (flow) {
+        const updatedFlow = {
+          ...flow,
+          cells: updatedCells
+        };
+        setFlow(updatedFlow);
+        updateTempFlow(updatedFlow);
+      }
+      
+      return updatedCells;
+    });
   };
 
   const executeCell = async (id: number) => {
@@ -331,7 +345,10 @@ const FlowEditor: React.FC = () => {
                 Execute
               </button>
               <button
-                onClick={() => deleteCell(cell.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteCell(cell.id);
+                }}
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
               >
                 <Trash2 className="inline-block mr-2" size={16} />
