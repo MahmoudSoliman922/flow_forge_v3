@@ -12,7 +12,7 @@ const FlowEditor: React.FC = () => {
   const [flow, setFlow] = useState<Flow | null>(null);
   const [localMetadata, setLocalMetadata] = useState<Flow['metadata'] | null>(null);
   const [localCells, setLocalCells] = useState<Cell[]>([]);
-  const { addTempFlow, updateTempFlow, updateTempFlowMetadata, publishFlow, liveFlows, tempFlows } = useFlows();
+  const { addTempFlow, updateTempFlow, updateTempFlowMetadata, publishFlow, liveFlows, tempFlows, runCell } = useFlows();
   const { user } = useAuth();
   const [nextId, setNextId] = useState(1);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
@@ -219,12 +219,13 @@ const FlowEditor: React.FC = () => {
                 cell.id === id ? executedCell : cell
               )
             };
+            console.log('updatedFlow', updatedFlow)
             setFlow(updatedFlow);
             updateTempFlow(updatedFlow);
           }
         } catch (err) {
           console.error('Error executing cell:', err);
-          setError(err.response?.data?.message || 'Error executing cell');
+          // setError(err || 'Error executing cell');
         } finally {
           setIsLoading(false);
         }
