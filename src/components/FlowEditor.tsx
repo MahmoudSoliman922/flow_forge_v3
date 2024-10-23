@@ -205,7 +205,7 @@ const FlowEditor: React.FC = () => {
     if (flow) {
       const cellToExecute = localCells.find(cell => cell.id === id);
       if (cellToExecute) {
-        setIsLoading(true);
+        // setIsLoading(true);
         setError(null);
         try {
           const newOutput = await runCell(flow.id, cellToExecute);
@@ -227,8 +227,6 @@ const FlowEditor: React.FC = () => {
         } catch (err) {
           console.error('Error executing cell:', err);
           // setError(err || 'Error executing cell');
-        } finally {
-          setIsLoading(false);
         }
       }
     }
