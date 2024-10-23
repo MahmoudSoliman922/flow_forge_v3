@@ -207,7 +207,7 @@ const FlowEditor: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-          const newOutput = await executeCell(flow.id, cellToExecute);
+          const newOutput = await runCell(flow.id, cellToExecute);
           if (newOutput !== cellToExecute.output) {
             const executedCell = { ...cellToExecute, output: newOutput };
             setLocalCells(prevCells =>
