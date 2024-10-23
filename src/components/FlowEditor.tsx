@@ -175,7 +175,10 @@ const FlowEditor: React.FC = () => {
         cells: localCells
       };
       setFlow(updatedFlow);
-      updateTempFlow(updatedFlow);
+      // Only update temp flow if we're not currently executing a cell
+      if (!isLoading) {
+        updateTempFlow(updatedFlow);
+      }
     }
   };
 
@@ -208,15 +211,14 @@ const FlowEditor: React.FC = () => {
           const newOutput = await runCell(flow.id, cellToExecute);
           if (newOutput !== cellToExecute.output) {
             const executedCell = { ...cellToExecute, output: newOutput };
-            setLocalCells(prevCells =>
-              prevCells.map(cell => cell.id === id ? executedCell : cell)
+            const updatedCells = localCells.map(cell => 
+              cell.id === id ? executedCell : cell
             );
+            setLocalCells(updatedCells);
             if (flow) {
               const updatedFlow = {
                 ...flow,
-                cells: localCells.map(cell => 
-                  cell.id === id ? executedCell : cell
-                )
+                cells: updatedCells
               };
               setFlow(updatedFlow);
               updateTempFlow(updatedFlow);
